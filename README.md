@@ -117,6 +117,90 @@ The agent will typically:
 
 To later add a relationship the agent might call `add_relationship` with `kind=OneToMany, from={entity:Customer, field:orders}, to={entity:Order, field:customer, required:true}`.
 
+## Example prompts to try
+
+Once the server is connected to your MCP host, paste any of these into the chat to exercise different tools. Each example shows the **intent → which tool the agent will fire → what to expect**. Replace the absolute paths with paths on your machine.
+
+### 1. Scaffold a brand-new app from scratch
+
+> Create a JHipster monolith in `/Users/me/projects/shop` called `shop`, JWT auth, PostgreSQL in prod with H2 in dev, Angular frontend, Maven, package `com.acme.shop`. Add a `Product` entity (name, price, sku) and a `Category` entity (name) with a OneToMany from Category to Products. Paginate everything.
+
+→ `create_app_from_jdl` with a full JDL block (`application { config { … } }`, both entities, the relationship, and `paginate * with pagination`).
+
+### 2. Microservice topology
+
+> Scaffold a JHipster microservices setup in `/tmp/banking`: a `gateway` app, an `accounts` microservice on port 8081, and a `payments` microservice on port 8082. All Postgres, JWT, Maven, package `com.acme.banking.<service>`. `accounts` owns `Account(iban, balance)`, `payments` owns `Payment(amount, status)` with an enum `PaymentStatus { PENDING, SETTLED, FAILED }`.
+
+→ `create_app_from_jdl` with three `application { … }` blocks plus the entities and enum.
+
+### 3. Add an entity to an existing project
+
+> In `/Users/me/projects/shop`, add a `Customer` entity with firstName (required, 2–50 chars), lastName (required), email (required, email-ish regex), and birthDate.
+
+→ `add_entity` — the server builds the JDL snippet, writes `entity-Customer.jdl`, runs `jhipster jdl entity-Customer.jdl --force --skip-git`.
+
+### 4. Add a relationship
+
+> Add a OneToMany from `Customer.orders` to `Order.customer`, with the customer side required.
+
+→ `add_relationship` with `kind=OneToMany, from={entity:Customer, field:orders}, to={entity:Order, field:customer, required:true}`.
+
+### 5. Toggle per-entity options
+
+> In `/Users/me/projects/shop`, enable MapStruct DTOs and service classes for every entity except `Country`, and put Elasticsearch search on `Product` and `Order`.
+
+→ `set_option` three times (or one `import_jdl`):
+
+```jdl
+dto * with mapstruct except Country
+service * with serviceClass except Country
+search Product, Order with elasticsearch
+```
+
+### 6. Bulk changes via raw JDL
+
+> Apply this JDL to `/Users/me/projects/shop`:
+> ```jdl
+> entity Review { rating Integer required min(1) max(5), comment TextBlob }
+> relationship ManyToOne { Review{product required} to Product }
+> paginate Review with infinite-scroll
+> ```
+
+→ `import_jdl` — the most flexible path; useful when several changes go together.
+
+### 7. Generate CI/CD config
+
+> Add a GitHub Actions pipeline to `/Users/me/projects/shop`.
+
+→ `generate_ci_cd` with `pipeline=github`.
+
+### 8. Inspect a project
+
+> What's the current setup of the project at `/Users/me/projects/shop`? List its entities and DB type.
+
+→ `info` — returns versions, `.yo-rc.json` config, and entity list.
+
+### 9. Escape hatch — uncommon subcommand
+
+> Run `jhipster export-jdl` in `/Users/me/projects/shop` to dump the current model to `current.jdl`.
+
+→ `run_jhipster` with `subcommand=export-jdl, args=["current.jdl"]` (allowlisted, no shell metacharacters).
+
+### 10. Multi-step refactor (the agent chains tools on its own)
+
+> In `/Users/me/projects/shop`, I want a proper order workflow. Add an `OrderStatus` enum (DRAFT, PLACED, PAID, SHIPPED, CANCELLED), give `Order` a `status` field using it, and a `placedAt Instant` field. Also add a OneToMany from `Order` to a new `OrderLine` (qty, unitPrice) entity. Make sure everything paginates and `Order` is filterable.
+
+→ The agent composes a single JDL snippet and calls `import_jdl` — one generator run for the whole change.
+
+### Prompting tips
+
+- **Always give an absolute path.** All tools require `workingDirectory`; "the current folder" won't resolve.
+- **Be specific about field types and validations** (e.g. `price BigDecimal required min(0)`) to save a round-trip to the grammar resource.
+- **For new apps, empty the target dir first.** `create_app_from_jdl` refuses to write into a non-empty directory.
+- **Prefer one big `import_jdl` over many granular calls** for coordinated changes — one generator run instead of N.
+- **Long generations:** initial scaffolds can take 30–90 s. Output is buffered and returned at the end.
+- **Out of scope:** this MCP won't run `mvn` / `npm` builds, start the app, run tests, or push to git. Use your host's shell tool for that.
+
 ## Safety notes
 
 - All tools take an explicit `workingDirectory` — the server refuses to act outside it.
