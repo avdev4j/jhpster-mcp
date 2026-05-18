@@ -214,7 +214,11 @@ search Product, Order with elasticsearch
 npm run dev         # tsup --watch
 npm run typecheck   # tsc --noEmit
 npm run build       # tsup → dist/index.js
+npm test            # node --test + tsx
+npm run test:watch  # tests in watch mode
 ```
+
+CI runs typecheck, build, and tests on every push/PR to `main` via [.github/workflows/ci.yml](.github/workflows/ci.yml) across Node 20/22/24 on Ubuntu and macOS.
 
 Quick smoke test (lists tools over stdio):
 
