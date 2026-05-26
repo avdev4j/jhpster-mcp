@@ -29,6 +29,7 @@ src/
   jhipster.ts         # spawn wrapper around the `jhipster` CLI + result formatting
   apply.ts            # applyJdl() — shared persist-vs-dry-run + result formatting
   progress.ts         # makeProgressReporter() — streams output as progress notes
+  result.ts           # toStructuredResult() + shared outputSchema (parses generator output)
   jdl/builders.ts     # pure JDL string builders + quickLintJdl, strict name validation
   tools/*.ts          # one MCP tool per file, each exports register<Name>(server)
   resources/*.ts      # one MCP resource per file, each exports register<Name>(server)
@@ -45,6 +46,7 @@ Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/app
 - **Spawn with `shell: false`** — no shell. Validate any user-influenced args (see `run_jhipster`'s allowlist + `ARG_PATTERN`).
 - **JDL injection guard:** entity/field/type/package names are validated against strict regex in [src/jdl/builders.ts](src/jdl/builders.ts). Reuse those builders rather than hand-concatenating JDL.
 - Handlers return `{ isError, content: [{ type: "text", text }] }`. A thrown error is also surfaced by the SDK as an `isError` result.
+- **Structured output:** every jhipster-running tool declares `outputSchema: structuredOutputShape` and returns `structuredContent: toStructuredResult(result, { jdl?, dryRun? })`. The SDK validates `structuredContent` against the schema **only on non-error results** — pre-spawn guard failures (allowlist, empty-dir, lint) stay `isError` with no `structuredContent` and are fine. `StructuredRunResult` has an index signature so it satisfies the SDK's `{ [x: string]: unknown }` requirement.
 
 ## Adding a new tool
 

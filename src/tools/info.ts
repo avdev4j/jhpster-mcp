@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 
 const inputShape = {
   workingDirectory: z
@@ -17,6 +18,7 @@ export function registerInfo(server: McpServer): void {
       description:
         "Runs `jhipster info` to print versions, configuration, entities, and environment for the project.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory }, extra) => {
       const result = await runJhipster({
@@ -28,6 +30,7 @@ export function registerInfo(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatRunResult(result) }],
+        structuredContent: toStructuredResult(result),
       };
     },
   );

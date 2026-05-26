@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 import { quickLintJdl } from "../jdl/builders.js";
 
 const inputShape = {
@@ -25,6 +26,7 @@ export function registerValidateJdl(server: McpServer): void {
       description:
         "Checks JDL for errors without writing any files. First runs a fast local structural lint (empty input, unbalanced braces), then a `jhipster jdl <file> --dry-run` parse so syntax/semantic errors surface before a real generation. Returns isError with the diagnostics when invalid.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ jdl, workingDirectory }, extra) => {
       // 1. Fast local lint — no spawn, works even when the CLI is unavailable.
@@ -72,6 +74,7 @@ export function registerValidateJdl(server: McpServer): void {
               text: `${ok ? "JDL is valid (dry run passed)." : "JDL validation failed."}\n\n${formatRunResult(result)}`,
             },
           ],
+          structuredContent: toStructuredResult(result, { jdl, dryRun: true }),
         };
       } finally {
         // Always remove our throwaway JDL; remove the whole temp dir if we made one.

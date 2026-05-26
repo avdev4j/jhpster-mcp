@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 import { buildOptionJdl } from "../jdl/builders.js";
 
 const inputShape = {
@@ -41,6 +42,7 @@ export function registerSetOption(server: McpServer): void {
       description:
         "Applies a JDL option line like `paginate * with pagination` to the project.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, option, value, entities, except, dryRun }, extra) => {
       const jdl = buildOptionJdl({ option, value, entities, except });
@@ -56,6 +58,7 @@ export function registerSetOption(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
+        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
       };
     },
   );

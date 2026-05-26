@@ -79,6 +79,24 @@ All tools accept an absolute `workingDirectory`. Every JHipster invocation runs 
 
 Every JDL-applying tool (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) accepts **`dryRun: true`** to preview via `jhipster jdl --dry-run` — nothing is written (the JDL is staged in a temp file), and the output shows what would change.
 
+### Structured output
+
+Every tool that runs `jhipster` declares an `outputSchema` and returns machine-readable `structuredContent` alongside the human-readable text, so agents can reason on JSON instead of parsing logs:
+
+```jsonc
+{
+  "command": "jhipster jdl changes.jdl --force --skip-git",
+  "exitCode": 0,
+  "success": true,
+  "dryRun": false,
+  "entities": ["Customer", "Order"],          // parsed from the applied JDL
+  "filesChanged": [{ "action": "create", "path": "src/main/java/..." }],
+  "warnings": ["WARNING! ..."]
+}
+```
+
+(Pre-flight guard failures — allowlist, non-empty dir, lint errors — return an `isError` text result without `structuredContent`.)
+
 ## Resources
 
 | URI | Description |

@@ -24,6 +24,10 @@ const extraLines = parseInt(process.env.FAKE_JHIPSTER_LINES || "0", 10);
 for (let i = 1; i <= extraLines; i++) {
   process.stdout.write("step " + i + "\\n");
 }
+// Optionally emit Yeoman-style file-action lines so structured-output parsing can be tested.
+if (process.env.FAKE_JHIPSTER_FILELINES) {
+  process.stdout.write(process.env.FAKE_JHIPSTER_FILELINES.split("|").join("\\n") + "\\n");
+}
 const payload = { cwd: process.cwd(), args };
 process.stdout.write("[fake-jhipster] " + JSON.stringify(payload) + "\\n");
 if (process.env.FAKE_JHIPSTER_STDERR) {

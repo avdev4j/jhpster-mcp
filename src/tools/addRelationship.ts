@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 import { buildRelationshipJdl, type RelationshipKind } from "../jdl/builders.js";
 
 const sideSchema = z.object({
@@ -37,6 +38,7 @@ export function registerAddRelationship(server: McpServer): void {
       description:
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, kind, from, to, dryRun }, extra) => {
       const jdl = buildRelationshipJdl({
@@ -56,6 +58,7 @@ export function registerAddRelationship(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
+        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
       };
     },
   );

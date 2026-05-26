@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 
 const ALLOWED_SUBCOMMANDS = new Set([
   "info",
@@ -49,6 +50,7 @@ export function registerRunJhipster(server: McpServer): void {
       description:
         "Escape hatch for subcommands not covered by dedicated tools. Subcommand must be allowlisted and each arg must avoid shell metacharacters. `--force` is appended automatically to keep execution non-interactive.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, subcommand, args }, extra) => {
       if (!ALLOWED_SUBCOMMANDS.has(subcommand)) {
@@ -85,6 +87,7 @@ export function registerRunJhipster(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatRunResult(result) }],
+        structuredContent: toStructuredResult(result),
       };
     },
   );

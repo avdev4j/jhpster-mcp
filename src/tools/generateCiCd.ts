@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 
 const inputShape = {
   workingDirectory: z
@@ -24,6 +25,7 @@ export function registerGenerateCiCd(server: McpServer): void {
       description:
         "Runs `jhipster ci-cd` non-interactively to scaffold a pipeline for the chosen provider.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, pipeline, extraArgs }, extra) => {
       const result = await runJhipster({
@@ -40,6 +42,7 @@ export function registerGenerateCiCd(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatRunResult(result) }],
+        structuredContent: toStructuredResult(result),
       };
     },
   );

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 
 const inputShape = {
   workingDirectory: z
@@ -35,6 +36,7 @@ export function registerImportJdl(server: McpServer): void {
       description:
         "Writes the provided JDL into the project directory and runs `jhipster jdl <file> --force --skip-git` to apply it (adds entities, relationships, options). Pass dryRun=true to preview without modifying the project.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
       const result = await applyJdl({
@@ -49,6 +51,7 @@ export function registerImportJdl(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, false) }],
+        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
       };
     },
   );

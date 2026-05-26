@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 import { buildEntityJdl, type EntityDef } from "../jdl/builders.js";
 
 const fieldSchema = z.object({
@@ -47,6 +48,7 @@ export function registerAddEntity(server: McpServer): void {
       description:
         "Builds a JDL snippet for one entity (and optional per-entity options) and applies it with `jhipster jdl`.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, name, fields, options, dryRun }, extra) => {
       const def: EntityDef = { name, fields, options };
@@ -63,6 +65,7 @@ export function registerAddEntity(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
+        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
       };
     },
   );

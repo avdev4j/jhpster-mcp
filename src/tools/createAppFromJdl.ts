@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
+import { structuredOutputShape, toStructuredResult } from "../result.js";
 
 const inputShape = {
   workingDirectory: z
@@ -42,6 +43,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
       description:
         "Scaffolds a new JHipster application by writing a JDL file to the target directory and running `jhipster jdl <file> --force --skip-git`. The directory should be empty. Pass dryRun=true to preview without writing.",
       inputSchema: inputShape,
+      outputSchema: structuredOutputShape,
     },
     async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
       await mkdir(workingDirectory, { recursive: true });
@@ -72,6 +74,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, false) }],
+        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
       };
     },
   );
