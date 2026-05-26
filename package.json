@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "description": "MCP server that lets AI agents drive the JHipster CLI",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avdev4j/jhipster-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/avdev4j/jhipster-mcp/issues"
+  },
+  "homepage": "https://github.com/avdev4j/jhipster-mcp#readme",
   "bin": {
     "jhipster-mcp": "./dist/index.js"
   },
