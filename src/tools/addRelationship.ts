@@ -1,9 +1,7 @@
-import { writeFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { applyJdl, formatApplyResult } from "../apply.js";
 import { buildRelationshipJdl, type RelationshipKind } from "../jdl/builders.js";
 
 const sideSchema = z.object({
@@ -25,6 +23,10 @@ const inputShape = {
       field: z.string().optional().describe("Optional back-reference field."),
     })
     .describe("Target side; field is optional (no back-reference if omitted)."),
+  dryRun: z
+    .boolean()
+    .default(false)
+    .describe("Preview only: run `jhipster jdl --dry-run` so the project is not modified."),
 };
 
 export function registerAddRelationship(server: McpServer): void {
@@ -36,27 +38,24 @@ export function registerAddRelationship(server: McpServer): void {
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, kind, from, to }, extra) => {
+    async ({ workingDirectory, kind, from, to, dryRun }, extra) => {
       const jdl = buildRelationshipJdl({
         kind: kind as RelationshipKind,
         from,
         to,
       });
-      const filename = `relationship-${from.entity}-${kind}-${to.entity}.jdl`;
-      const filePath = path.join(workingDirectory, filename);
-      await writeFile(filePath, jdl, "utf8");
 
-      const result = await runJhipster({
-        cwd: workingDirectory,
-        args: ["jdl", filename, "--force", "--skip-git"],
+      const result = await applyJdl({
+        workingDirectory,
+        jdl,
+        filename: `relationship-${from.entity}-${kind}-${to.entity}.jdl`,
+        dryRun,
         onData: makeProgressReporter(extra),
       });
 
       return {
         isError: result.exitCode !== 0,
-        content: [
-          { type: "text", text: `Applied JDL:\n${jdl}\n\n${formatRunResult(result)}` },
-        ],
+        content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
       };
     },
   );

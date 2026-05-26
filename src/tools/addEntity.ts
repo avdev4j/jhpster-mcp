@@ -1,9 +1,7 @@
-import { writeFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { applyJdl, formatApplyResult } from "../apply.js";
 import { buildEntityJdl, type EntityDef } from "../jdl/builders.js";
 
 const fieldSchema = z.object({
@@ -35,6 +33,10 @@ const inputShape = {
     .describe(
       "Per-entity options keyed by JDL option, applied after the entity declaration. Example: { paginate: 'pagination', service: 'serviceClass' }.",
     ),
+  dryRun: z
+    .boolean()
+    .default(false)
+    .describe("Preview only: run `jhipster jdl --dry-run` so the project is not modified."),
 };
 
 export function registerAddEntity(server: McpServer): void {
@@ -46,24 +48,21 @@ export function registerAddEntity(server: McpServer): void {
         "Builds a JDL snippet for one entity (and optional per-entity options) and applies it with `jhipster jdl`.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, name, fields, options }, extra) => {
+    async ({ workingDirectory, name, fields, options, dryRun }, extra) => {
       const def: EntityDef = { name, fields, options };
       const jdl = buildEntityJdl(def);
-      const filename = `entity-${name}.jdl`;
-      const filePath = path.join(workingDirectory, filename);
-      await writeFile(filePath, jdl, "utf8");
 
-      const result = await runJhipster({
-        cwd: workingDirectory,
-        args: ["jdl", filename, "--force", "--skip-git"],
+      const result = await applyJdl({
+        workingDirectory,
+        jdl,
+        filename: `entity-${name}.jdl`,
+        dryRun,
         onData: makeProgressReporter(extra),
       });
 
       return {
         isError: result.exitCode !== 0,
-        content: [
-          { type: "text", text: `Applied JDL:\n${jdl}\n\n${formatRunResult(result)}` },
-        ],
+        content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
       };
     },
   );

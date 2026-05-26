@@ -6,6 +6,7 @@ import {
   buildEntityJdl,
   buildOptionJdl,
   buildRelationshipJdl,
+  quickLintJdl,
   withTempJdlFile,
 } from "../../src/jdl/builders.js";
 
@@ -178,6 +179,29 @@ describe("buildOptionJdl", () => {
       () => buildOptionJdl({ option: "paginate", value: "pagination", entities: ["bad"] }),
       /Invalid entity name/,
     );
+  });
+});
+
+describe("quickLintJdl", () => {
+  it("passes valid, balanced JDL", () => {
+    assert.deepEqual(quickLintJdl("entity Foo {\n  bar String\n}"), []);
+    assert.deepEqual(quickLintJdl("paginate * with pagination"), []);
+  });
+
+  it("flags empty input", () => {
+    assert.deepEqual(quickLintJdl("   \n  "), ["JDL is empty."]);
+  });
+
+  it("flags an unclosed brace", () => {
+    const issues = quickLintJdl("entity Foo {");
+    assert.equal(issues.length, 1);
+    assert.match(issues[0]!, /unclosed/);
+  });
+
+  it("flags a stray closing brace", () => {
+    const issues = quickLintJdl("entity Foo {} }");
+    assert.equal(issues.length, 1);
+    assert.match(issues[0]!, /no matching/);
   });
 });
 

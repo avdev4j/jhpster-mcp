@@ -153,6 +153,38 @@ export function buildOptionJdl(opt: OptionEntry): string {
   return `${opt.option} ${target} with ${String(opt.value)}${except}`;
 }
 
+/**
+ * Cheap, dependency-free structural lint of raw JDL. Catches the obvious
+ * mistakes (empty input, unbalanced braces) instantly and without spawning
+ * `jhipster` — useful both as a fast-fail and when the CLI is unavailable.
+ * Curly braces are structural in JDL and never appear inside values, so this
+ * check is free of false positives. Deeper semantic validation is delegated to
+ * the generator via a dry run.
+ */
+export function quickLintJdl(jdl: string): string[] {
+  const issues: string[] = [];
+  if (jdl.trim().length === 0) {
+    issues.push("JDL is empty.");
+    return issues;
+  }
+  let depth = 0;
+  for (const ch of jdl) {
+    if (ch === "{") {
+      depth += 1;
+    } else if (ch === "}") {
+      depth -= 1;
+      if (depth < 0) {
+        issues.push("Unbalanced braces: a '}' appears with no matching '{'.");
+        return issues;
+      }
+    }
+  }
+  if (depth > 0) {
+    issues.push(`Unbalanced braces: ${depth} '{' left unclosed.`);
+  }
+  return issues;
+}
+
 export async function withTempJdlFile<T>(
   content: string,
   fn: (filePath: string) => Promise<T>,

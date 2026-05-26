@@ -67,6 +67,7 @@ All tools accept an absolute `workingDirectory`. Every JHipster invocation runs 
 
 | Tool | What it does |
 |---|---|
+| `validate_jdl` | Validates JDL **without writing files** — fast local lint (empty/unbalanced braces) then a `jhipster jdl --dry-run` parse. Catches errors before a real generation. |
 | `create_app_from_jdl` | Writes the JDL into an **empty** dir and runs `jhipster jdl <file>` to scaffold a new app. |
 | `import_jdl` | Writes JDL into an existing project and applies it. |
 | `add_entity` | Builds JDL for one entity + optional per-entity options, then applies it. |
@@ -75,6 +76,8 @@ All tools accept an absolute `workingDirectory`. Every JHipster invocation runs 
 | `info` | Runs `jhipster info`. |
 | `generate_ci_cd` | Runs `jhipster ci-cd --ci-cd=<provider>` for jenkins / github / gitlab / azure / travis / circle. |
 | `run_jhipster` | Escape hatch — runs an allowlisted subcommand with sanitized args. |
+
+Every JDL-applying tool (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) accepts **`dryRun: true`** to preview via `jhipster jdl --dry-run` — nothing is written (the JDL is staged in a temp file), and the output shows what would change.
 
 ## Resources
 
@@ -167,6 +170,21 @@ search Product, Order with elasticsearch
 > ```
 
 → `import_jdl` — the most flexible path; useful when several changes go together.
+
+### 7a. Validate JDL before applying
+
+> Validate this JDL without changing anything:
+> ```jdl
+> entity Invoice { number String required, total BigDecimal min(0) }
+> ```
+
+→ `validate_jdl` — local lint + `jhipster jdl --dry-run` in a temp dir. Add `workingDirectory` to validate entity-only JDL against an existing project's model.
+
+### 7b. Preview a change (dry run)
+
+> In `/Users/me/projects/shop`, show me what adding a `Tag` entity would change — don't write anything yet.
+
+→ `add_entity` with `dryRun: true` (works on all JDL-applying tools).
 
 ### 7. Generate CI/CD config
 

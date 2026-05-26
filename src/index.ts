@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
+import { registerValidateJdl } from "./tools/validateJdl.js";
 import { registerCreateAppFromJdl } from "./tools/createAppFromJdl.js";
 import { registerImportJdl } from "./tools/importJdl.js";
 import { registerAddEntity } from "./tools/addEntity.js";
@@ -17,6 +18,7 @@ async function main(): Promise<void> {
     version: "0.1.0",
   });
 
+  registerValidateJdl(server);
   registerCreateAppFromJdl(server);
   registerImportJdl(server);
   registerAddEntity(server);

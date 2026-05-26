@@ -27,12 +27,14 @@ Always run `npm run typecheck` and `npm test` before considering a change done.
 src/
   index.ts            # registers all tools + resources, connects stdio transport
   jhipster.ts         # spawn wrapper around the `jhipster` CLI + result formatting
-  jdl/builders.ts     # pure JDL string builders with strict name validation
+  apply.ts            # applyJdl() — shared persist-vs-dry-run + result formatting
+  progress.ts         # makeProgressReporter() — streams output as progress notes
+  jdl/builders.ts     # pure JDL string builders + quickLintJdl, strict name validation
   tools/*.ts          # one MCP tool per file, each exports register<Name>(server)
   resources/*.ts      # one MCP resource per file, each exports register<Name>(server)
 ```
 
-Data flow: a tool handler builds/writes a `.jdl` file into `workingDirectory`, then calls `runJhipster()` which `spawn`s `jhipster jdl <file> --force --skip-git`. Granular tools (`add_entity`, `add_relationship`, `set_option`) and the bulk tools (`create_app_from_jdl`, `import_jdl`) all share this one mechanism.
+Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/apply.ts](src/apply.ts)), which either persists the `.jdl` into `workingDirectory` and runs `jhipster jdl <file> --force --skip-git`, or (when `dryRun`) stages it in a temp file and adds `--dry-run` so nothing is written. `applyJdl` wraps `runJhipster()` (`spawn`). All five applying tools (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) share this one mechanism and expose a `dryRun` flag. `validate_jdl` is dry-run-only: local `quickLintJdl` first, then a throwaway `jhipster jdl --dry-run`.
 
 ## Conventions (match these)
 

@@ -10,7 +10,7 @@ Status legend: ⬜ not started · 🟡 in progress · ✅ done · ❄️ deferre
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 1 | **Progress streaming** — emit MCP `notifications/progress` from `runJhipster` as `jhipster` writes output, instead of buffering until exit. | ✅ | Done 2026-05-19. `onData` hook in [src/jhipster.ts](src/jhipster.ts); reporter in [src/progress.ts](src/progress.ts) reads `extra._meta.progressToken` + `extra.sendNotification`, emits one note per non-empty line. Wired into all jhipster-spawning tools. Tested in [test/progress.test.ts](test/progress.test.ts) + [test/tools/progressStreaming.test.ts](test/tools/progressStreaming.test.ts). |
-| 2 | **JDL validation + dry-run** — `validate_jdl` tool and a `dryRun` flag on apply tools, so bad JDL is caught before a multi-minute generator run. | ⬜ | Use JHipster's JDL parser (`jhipster jdl --json-only` or the parser lib) to lint without generating. Preview which entities/files would change. |
+| 2 | **JDL validation + dry-run** — `validate_jdl` tool and a `dryRun` flag on apply tools, so bad JDL is caught before a multi-minute generator run. | ✅ | Done 2026-05-19. `quickLintJdl` (local, no spawn) in [src/jdl/builders.ts](src/jdl/builders.ts); `validate_jdl` tool ([src/tools/validateJdl.ts](src/tools/validateJdl.ts)) lints then runs `jhipster jdl --dry-run --skip-install` in a temp dir (or a given project). Shared `applyJdl` helper ([src/apply.ts](src/apply.ts)) adds a `dryRun` flag (temp-file + `--dry-run`, zero writes) to all five applying tools. ⚠️ relies on `jhipster --dry-run`; confirm against a real CLI. |
 | 3 | **Structured output** — return `structuredContent` + `outputSchema` ({ entitiesCreated, filesChanged, warnings, exitCode }) alongside the text. | ⬜ | Agents reason on JSON instead of regex-ing the formatted string. Parse generator stdout / diff the dir. |
 
 ## Tier 2 — richer model awareness
@@ -49,3 +49,4 @@ Status legend: ⬜ not started · 🟡 in progress · ✅ done · ❄️ deferre
 
 - **2026-05-19** — Roadmap created. Starting with Tier 1 #1 (progress streaming). Remaining items tracked here for future sessions.
 - **2026-05-19** — ✅ Tier 1 #1 progress streaming shipped. Next up: Tier 1 #2 (JDL validation + dry-run).
+- **2026-05-19** — ✅ Tier 1 #2 JDL validation + dry-run shipped (`validate_jdl` tool, `dryRun` flag on all applying tools via shared `applyJdl`, `quickLintJdl`). Tool count now 9. ⚠️ Open follow-up: verify `jhipster jdl --dry-run` behavior against a working real CLI (the dev box's global jhipster was broken). Next up: Tier 1 #3 (structured output).

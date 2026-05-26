@@ -1,9 +1,7 @@
-import { writeFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
+import { applyJdl, formatApplyResult } from "../apply.js";
 import { buildOptionJdl } from "../jdl/builders.js";
 
 const inputShape = {
@@ -29,6 +27,10 @@ const inputShape = {
     .array(z.string())
     .optional()
     .describe("Entities to exclude when applying to all."),
+  dryRun: z
+    .boolean()
+    .default(false)
+    .describe("Preview only: run `jhipster jdl --dry-run` so the project is not modified."),
 };
 
 export function registerSetOption(server: McpServer): void {
@@ -40,23 +42,20 @@ export function registerSetOption(server: McpServer): void {
         "Applies a JDL option line like `paginate * with pagination` to the project.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, option, value, entities, except }, extra) => {
+    async ({ workingDirectory, option, value, entities, except, dryRun }, extra) => {
       const jdl = buildOptionJdl({ option, value, entities, except });
-      const filename = `option-${option}.jdl`;
-      const filePath = path.join(workingDirectory, filename);
-      await writeFile(filePath, jdl, "utf8");
 
-      const result = await runJhipster({
-        cwd: workingDirectory,
-        args: ["jdl", filename, "--force", "--skip-git"],
+      const result = await applyJdl({
+        workingDirectory,
+        jdl,
+        filename: `option-${option}.jdl`,
+        dryRun,
         onData: makeProgressReporter(extra),
       });
 
       return {
         isError: result.exitCode !== 0,
-        content: [
-          { type: "text", text: `Applied JDL:\n${jdl}\n\n${formatRunResult(result)}` },
-        ],
+        content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
       };
     },
   );
