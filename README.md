@@ -14,37 +14,17 @@ A Model Context Protocol (MCP) server that lets AI agents — Claude Code, Claud
 
 The MCP server spawns your existing global `jhipster` binary; it does **not** bundle the generator.
 
-## Install
+## Quick start (from npm)
 
-From source (until published):
-
-```bash
-git clone <this-repo> jhipster-mcp
-cd jhipster-mcp
-npm install
-npm run build
-```
-
-The built entry point lands at `dist/index.js` and is marked executable.
-
-## Configure your MCP host
+The package is published on npm: **[jhipster-mcp](https://www.npmjs.com/package/jhipster-mcp)**. You don't need to clone or build anything — your MCP host runs it via `npx`, which downloads and caches it automatically.
 
 ### Claude Code
 
-Add to your MCP config (e.g. `~/.claude/mcp.json` or via `claude mcp add`):
-
-```json
-{
-  "mcpServers": {
-    "jhipster": {
-      "command": "node",
-      "args": ["/absolute/path/to/jhipster-mcp/dist/index.js"]
-    }
-  }
-}
+```bash
+claude mcp add jhipster -- npx -y jhipster-mcp
 ```
 
-Or, once published to npm:
+Or add it to your MCP config (e.g. `~/.claude/mcp.json`) manually:
 
 ```json
 {
@@ -59,7 +39,39 @@ Or, once published to npm:
 
 ### Claude Desktop
 
-Same shape, in `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS).
+Add the same block to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows), then restart the app.
+
+### Cursor / other MCP hosts
+
+Use the same `command` / `args` pair in whatever MCP config your host exposes.
+
+> Tip: to pin a version, use `npx -y jhipster-mcp@0.0.2`. To install once globally instead of resolving via `npx` each launch: `npm install -g jhipster-mcp` and set `"command": "jhipster-mcp"` with no `args`.
+
+After adding it, restart your host and ask it something like *"Create a JHipster monolith in /tmp/demo with a Product entity."* — see [Example prompts to try](#example-prompts-to-try).
+
+## Install from source (development)
+
+Only needed if you want to hack on the server itself:
+
+```bash
+git clone https://github.com/avdev4j/jhipster-mcp.git
+cd jhipster-mcp
+npm install
+npm run build
+```
+
+The built entry point lands at `dist/index.js` (marked executable). Point your MCP host at your local build:
+
+```json
+{
+  "mcpServers": {
+    "jhipster": {
+      "command": "node",
+      "args": ["/absolute/path/to/jhipster-mcp/dist/index.js"]
+    }
+  }
+}
+```
 
 ## Tools
 
