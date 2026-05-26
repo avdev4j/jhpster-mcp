@@ -1,6 +1,6 @@
 {
   "name": "jhipster-mcp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "MCP server that lets AI agents drive the JHipster CLI",
   "type": "module",
   "repository": {
