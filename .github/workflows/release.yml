@@ -1,9 +1,10 @@
 name: Release
 
+# Triggered when you publish a GitHub Release through the UI.
+# The release tag (e.g. v0.0.3) defines the version that gets published.
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -15,8 +16,10 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout tag
+      - name: Checkout release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
 
       - name: Set up Node 24
         uses: actions/setup-node@v4
@@ -25,10 +28,11 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
-      - name: Set version from ref
+      - name: Set version from release tag
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="${{ github.event.release.tag_name || github.ref_name }}"
           VERSION="${TAG#v}"
+          echo "Releasing version $VERSION (tag $TAG)"
           npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Install dependencies
@@ -39,5 +43,10 @@ jobs:
           npm run build
           npm test
 
-      - name: Publish to npm
-        run: npm publish --access public --provenance
+      # Trusted Publishing (OIDC): no NPM_TOKEN needed. Requires `id-token: write`
+      # (set above) and npm >= 11.5.1, which generates provenance automatically.
+      - name: Ensure npm supports trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Publish to npm (trusted publishing / OIDC)
+        run: npm publish --access public

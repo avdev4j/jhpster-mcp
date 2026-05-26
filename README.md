@@ -279,6 +279,25 @@ EOF
 ) | node dist/index.js
 ```
 
+## Releasing
+
+**The GitHub Release tag is the single source of truth for the version.** Everything derives from it:
+
+- The release workflow ([.github/workflows/release.yml](.github/workflows/release.yml)) reads the tag (e.g. `v0.0.3`), strips the `v`, and sets `package.json` to that version before building and publishing.
+- The MCP server reports `pkg.version` at runtime ([src/index.ts](src/index.ts) imports `package.json`, inlined at build) — so the published npm version, the tag, and the runtime version are always identical.
+
+To cut a release:
+
+1. On GitHub, go to **Releases → Draft a new release**.
+2. Create a new tag named **`vX.Y.Z`** (semver, `v`-prefixed) targeting `main`, fill in the notes, and **Publish release**.
+
+Publishing the release fires the `release: published` event, which triggers the workflow to:
+1. check out the release tag and set `package.json` to `X.Y.Z`,
+2. run build + test,
+3. publish to npm via **Trusted Publishing (OIDC)** — no `NPM_TOKEN` secret; provenance is generated automatically (requires the Trusted Publisher to be configured on npmjs.com for this repo + workflow, and npm ≥ 11.5.1, which the workflow installs).
+
+You don't need to bump `package.json` in a commit beforehand — the workflow forces it to match the tag. (Optionally keep `main`'s `package.json` in step with `npm version --no-git-tag-version X.Y.Z` so local dev reports the right version, but it isn't required for publishing.)
+
 ## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).

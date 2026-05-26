@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import pkg from "../package.json" with { type: "json" };
 
 import { registerValidateJdl } from "./tools/validateJdl.js";
 import { registerCreateAppFromJdl } from "./tools/createAppFromJdl.js";
@@ -14,8 +15,8 @@ import { registerJdlGrammar } from "./resources/jdlGrammar.js";
 
 async function main(): Promise<void> {
   const server = new McpServer({
-    name: "jhipster-mcp",
-    version: "0.0.2",
+    name: pkg.name,
+    version: pkg.version,
   });
 
   registerValidateJdl(server);
