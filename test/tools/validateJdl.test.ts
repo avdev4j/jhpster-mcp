@@ -24,7 +24,7 @@ describe("validate_jdl tool", () => {
     }
   });
 
-  it("runs a --dry-run validation in a temp dir and reports success", async () => {
+  it("validates in an isolated temp dir and reports success", async () => {
     const fake = await installFakeJhipster();
     const { client, close } = await createMcpPair(registerValidateJdl);
     try {
@@ -35,8 +35,8 @@ describe("validate_jdl tool", () => {
       const text = getText(res as never);
       assert.equal((res as { isError?: boolean }).isError ?? false, false);
       assert.match(text, /JDL is valid/);
-      assert.match(text, /--dry-run/);
       assert.match(text, /--skip-install/);
+      assert.match(text, /jhipster-mcp-preview-/, "should run in an isolated preview temp dir");
     } finally {
       await close();
       fake.restorePath();

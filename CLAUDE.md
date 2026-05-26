@@ -35,7 +35,9 @@ src/
   resources/*.ts      # one MCP resource per file, each exports register<Name>(server)
 ```
 
-Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/apply.ts](src/apply.ts)), which either persists the `.jdl` into `workingDirectory` and runs `jhipster jdl <file> --force --skip-git`, or (when `dryRun`) stages it in a temp file and adds `--dry-run` so nothing is written. `applyJdl` wraps `runJhipster()` (`spawn`). All five applying tools (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) share this one mechanism and expose a `dryRun` flag. `validate_jdl` is dry-run-only: local `quickLintJdl` first, then a throwaway `jhipster jdl --dry-run`.
+Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/apply.ts](src/apply.ts)), which either persists the `.jdl` into `workingDirectory` and runs `jhipster jdl <file> --force --skip-git`, or (when `dryRun`) calls `runJdlIsolated()` — generate in a throwaway temp dir and discard. All five applying tools (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) share this and expose a `dryRun` flag. `validate_jdl` always isolates: local `quickLintJdl` first, then `runJdlIsolated`.
+
+**Important — dry-run is isolation, not a flag.** JHipster 9's `--dry-run` only *prints conflicts*; it still writes files (verified against real CLI). So a true no-write preview means generating in a temp dir. `runJdlIsolated` copies the project's `.yo-rc.json` + `.jhipster/` (entity configs) into the temp dir for context, runs `jhipster jdl preview.jdl --force --skip-git --skip-install` there, then `rm`s it. Never pass `--dry-run` expecting no writes.
 
 ## Conventions (match these)
 

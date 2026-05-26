@@ -1,10 +1,18 @@
-import { writeFile } from "node:fs/promises";
+import { writeFile, mkdtemp, rm, cp, access, constants } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { runJhipster, formatRunResult, type RunResult } from "./jhipster.js";
-import { withTempJdlFile } from "./jdl/builders.js";
 import type { OnData } from "./progress.js";
 
 const BASE_ARGS = ["--force", "--skip-git"];
+
+/**
+ * Project files copied into an isolated preview dir so a dry run reflects the
+ * real application config + existing entities. JHipster 9's `--dry-run` only
+ * prints conflicts (it still writes), so a true no-write preview means
+ * generating into a throwaway copy and discarding it.
+ */
+const CONTEXT_ENTRIES = [".yo-rc.json", ".jhipster"];
 
 export interface ApplyJdlOptions {
   workingDirectory: string;
@@ -12,34 +20,85 @@ export interface ApplyJdlOptions {
   /** Filename used to persist the JDL into the project (ignored on a dry run). */
   filename: string;
   extraArgs?: string[];
-  /** When true, append `--dry-run` and write the JDL to a temp file so nothing in the project changes. */
+  /** When true, generate in an isolated temp copy and discard it — the project is never modified. */
   dryRun?: boolean;
   onData?: OnData;
 }
 
 export interface ApplyJdlResult extends RunResult {
-  /** Where the JDL was written (inside the project, or a temp file for dry runs). */
+  /** Where the JDL was (or would be) written in the project. */
   jdlPath: string;
   dryRun: boolean;
 }
 
+/** Best-effort copy of the project's generator context (`.yo-rc.json`, `.jhipster/`) into `dest`. */
+export async function copyProjectContext(src: string, dest: string): Promise<void> {
+  for (const entry of CONTEXT_ENTRIES) {
+    const from = path.join(src, entry);
+    try {
+      await access(from, constants.F_OK);
+    } catch {
+      continue; // not present in this project — skip
+    }
+    await cp(from, path.join(dest, entry), { recursive: true });
+  }
+}
+
 /**
- * Persist (or, for a dry run, stage in a temp file) the given JDL and apply it
- * via `jhipster jdl`. Centralises the persist-vs-dry-run branching shared by
- * every JDL-applying tool.
+ * Run `jhipster jdl` for the given JDL in an isolated temp directory and discard
+ * it afterwards. Used for dry-run previews and validation so nothing in the real
+ * project changes. The project's config/entities are copied in first (if present)
+ * so the preview is faithful.
+ */
+export async function runJdlIsolated(opts: {
+  jdl: string;
+  /** Project to copy context from; may not exist (new-app preview). */
+  contextDir?: string;
+  extraArgs?: string[];
+  onData?: OnData;
+}): Promise<RunResult> {
+  const tempDir = await mkdtemp(path.join(tmpdir(), "jhipster-mcp-preview-"));
+  try {
+    if (opts.contextDir) {
+      try {
+        await access(opts.contextDir, constants.F_OK);
+        await copyProjectContext(opts.contextDir, tempDir);
+      } catch {
+        /* contextDir missing (e.g. brand-new app) — nothing to copy */
+      }
+    }
+    const filename = "preview.jdl";
+    await writeFile(path.join(tempDir, filename), opts.jdl, "utf8");
+    return await runJhipster({
+      cwd: tempDir,
+      args: ["jdl", filename, ...BASE_ARGS, "--skip-install", ...(opts.extraArgs ?? [])],
+      onData: opts.onData,
+    });
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Persist the JDL and apply it via `jhipster jdl`, or (when `dryRun`) generate in
+ * an isolated copy and discard it. Centralises the branching shared by every
+ * JDL-applying tool.
  */
 export async function applyJdl(opts: ApplyJdlOptions): Promise<ApplyJdlResult> {
   const extraArgs = opts.extraArgs ?? [];
 
   if (opts.dryRun) {
-    return withTempJdlFile(opts.jdl, async (tmpFile) => {
-      const result = await runJhipster({
-        cwd: opts.workingDirectory,
-        args: ["jdl", tmpFile, ...BASE_ARGS, "--dry-run", ...extraArgs],
-        onData: opts.onData,
-      });
-      return { ...result, jdlPath: tmpFile, dryRun: true };
+    const result = await runJdlIsolated({
+      jdl: opts.jdl,
+      contextDir: opts.workingDirectory,
+      extraArgs,
+      onData: opts.onData,
     });
+    return {
+      ...result,
+      jdlPath: path.join(opts.workingDirectory, opts.filename),
+      dryRun: true,
+    };
   }
 
   const jdlPath = path.join(opts.workingDirectory, opts.filename);
@@ -63,7 +122,7 @@ export function formatApplyResult(
   echoJdl: boolean,
 ): string {
   const note = result.dryRun
-    ? "Dry run — no files were written (jhipster --dry-run). Preview below.\n\n"
+    ? "Dry run — generated in an isolated copy and discarded; your project was not modified. Preview below.\n\n"
     : "";
   const body = echoJdl
     ? `${result.dryRun ? "Validated JDL" : "Applied JDL"}:\n${jdl}\n\n${formatRunResult(result)}`

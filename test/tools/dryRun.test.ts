@@ -8,7 +8,7 @@ import { installFakeJhipster } from "../helpers/fakeJhipster.js";
 import { makeTempDir } from "../helpers/tmpdir.js";
 
 describe("dryRun flag", () => {
-  it("import_jdl dryRun adds --dry-run and writes no JDL file into the project", async () => {
+  it("import_jdl dryRun runs in an isolated dir and writes nothing into the project", async () => {
     const tmp = await makeTempDir();
     const fake = await installFakeJhipster();
     const { client, close } = await createMcpPair(registerImportJdl);
@@ -23,8 +23,10 @@ describe("dryRun flag", () => {
       });
       const text = getText(res as never);
       assert.match(text, /Dry run/i);
-      // --dry-run present, and the jdl path is a temp file (absolute), not changes.jdl in the project
-      assert.match(text, /"--dry-run"/);
+      // generation runs in a throwaway preview dir, not the project; uses --skip-install
+      assert.match(text, /"--skip-install"/);
+      assert.match(text, /jhipster-mcp-preview-/, "should run in an isolated preview temp dir");
+      assert.doesNotMatch(text, new RegExp(`"cwd":"[^"]*${tmp.path}"`));
       const remaining = await readdir(tmp.path);
       assert.equal(remaining.length, 0, `expected empty project dir, found: ${remaining.join(", ")}`);
     } finally {
@@ -75,7 +77,7 @@ describe("dryRun flag", () => {
       const text = getText(res as never);
       assert.match(text, /Dry run/i);
       assert.match(text, /Validated JDL/);
-      assert.match(text, /"--dry-run"/);
+      assert.match(text, /jhipster-mcp-preview-/, "should run in an isolated preview temp dir");
       const remaining = await readdir(tmp.path);
       assert.equal(remaining.length, 0, `expected empty dir, found: ${remaining.join(", ")}`);
     } finally {

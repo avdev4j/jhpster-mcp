@@ -77,7 +77,7 @@ All tools accept an absolute `workingDirectory`. Every JHipster invocation runs 
 | `generate_ci_cd` | Runs `jhipster ci-cd --ci-cd=<provider>` for jenkins / github / gitlab / azure / travis / circle. |
 | `run_jhipster` | Escape hatch — runs an allowlisted subcommand with sanitized args. |
 
-Every JDL-applying tool (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) accepts **`dryRun: true`** to preview via `jhipster jdl --dry-run` — nothing is written (the JDL is staged in a temp file), and the output shows what would change.
+Every JDL-applying tool (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) accepts **`dryRun: true`** for a true no-write preview. (JHipster's own `--dry-run` only prints conflicts — it still writes — so this server instead generates in a throwaway temp dir, copying the project's `.yo-rc.json`/`.jhipster` for context, parses what would be produced, and discards it. Your project is never modified.)
 
 ### Structured output
 
@@ -196,7 +196,7 @@ search Product, Order with elasticsearch
 > entity Invoice { number String required, total BigDecimal min(0) }
 > ```
 
-→ `validate_jdl` — local lint + `jhipster jdl --dry-run` in a temp dir. Add `workingDirectory` to validate entity-only JDL against an existing project's model.
+→ `validate_jdl` — local lint, then generate in an isolated throwaway dir and discard. Add `workingDirectory` to validate entity-only JDL against an existing project's model (its config/entities are copied into the temp dir; your project is untouched).
 
 ### 7b. Preview a change (dry run)
 
