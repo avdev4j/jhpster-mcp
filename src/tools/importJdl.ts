@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 
 const inputShape = {
   workingDirectory: z
@@ -31,13 +32,14 @@ export function registerImportJdl(server: McpServer): void {
         "Writes the provided JDL into the project directory and runs `jhipster jdl <file> --force --skip-git` to apply it (adds entities, relationships, options).",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, jdl, jdlFilename, extraArgs }) => {
+    async ({ workingDirectory, jdl, jdlFilename, extraArgs }, extra) => {
       const jdlPath = path.join(workingDirectory, jdlFilename);
       await writeFile(jdlPath, jdl, "utf8");
 
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["jdl", jdlFilename, "--force", "--skip-git", ...extraArgs],
+        onData: makeProgressReporter(extra),
       });
 
       return {

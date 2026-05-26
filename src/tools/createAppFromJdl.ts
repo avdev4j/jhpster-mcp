@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 
 const inputShape = {
   workingDirectory: z
@@ -37,7 +38,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
         "Scaffolds a new JHipster application by writing a JDL file to the target directory and running `jhipster jdl <file> --force --skip-git`. The directory should be empty.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, jdl, jdlFilename, extraArgs }) => {
+    async ({ workingDirectory, jdl, jdlFilename, extraArgs }, extra) => {
       await mkdir(workingDirectory, { recursive: true });
       const entries = await readdir(workingDirectory);
       const allowList = new Set([".git", ".DS_Store"]);
@@ -60,6 +61,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["jdl", jdlFilename, "--force", "--skip-git", ...extraArgs],
+        onData: makeProgressReporter(extra),
       });
 
       return {

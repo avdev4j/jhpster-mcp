@@ -20,6 +20,10 @@ export async function installFakeJhipster(): Promise<FakeJhipster> {
   const binPath = path.join(binDir, "jhipster");
   const script = `#!/usr/bin/env node
 const args = process.argv.slice(2);
+const extraLines = parseInt(process.env.FAKE_JHIPSTER_LINES || "0", 10);
+for (let i = 1; i <= extraLines; i++) {
+  process.stdout.write("step " + i + "\\n");
+}
 const payload = { cwd: process.cwd(), args };
 process.stdout.write("[fake-jhipster] " + JSON.stringify(payload) + "\\n");
 if (process.env.FAKE_JHIPSTER_STDERR) {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 
 const inputShape = {
   workingDirectory: z
@@ -24,7 +25,7 @@ export function registerGenerateCiCd(server: McpServer): void {
         "Runs `jhipster ci-cd` non-interactively to scaffold a pipeline for the chosen provider.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, pipeline, extraArgs }) => {
+    async ({ workingDirectory, pipeline, extraArgs }, extra) => {
       const result = await runJhipster({
         cwd: workingDirectory,
         args: [
@@ -34,6 +35,7 @@ export function registerGenerateCiCd(server: McpServer): void {
           "--skip-git",
           ...extraArgs,
         ],
+        onData: makeProgressReporter(extra),
       });
       return {
         isError: result.exitCode !== 0,

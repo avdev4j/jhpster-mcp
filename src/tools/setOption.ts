@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 import { buildOptionJdl } from "../jdl/builders.js";
 
 const inputShape = {
@@ -39,7 +40,7 @@ export function registerSetOption(server: McpServer): void {
         "Applies a JDL option line like `paginate * with pagination` to the project.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, option, value, entities, except }) => {
+    async ({ workingDirectory, option, value, entities, except }, extra) => {
       const jdl = buildOptionJdl({ option, value, entities, except });
       const filename = `option-${option}.jdl`;
       const filePath = path.join(workingDirectory, filename);
@@ -48,6 +49,7 @@ export function registerSetOption(server: McpServer): void {
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["jdl", filename, "--force", "--skip-git"],
+        onData: makeProgressReporter(extra),
       });
 
       return {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 
 const ALLOWED_SUBCOMMANDS = new Set([
   "info",
@@ -49,7 +50,7 @@ export function registerRunJhipster(server: McpServer): void {
         "Escape hatch for subcommands not covered by dedicated tools. Subcommand must be allowlisted and each arg must avoid shell metacharacters. `--force` is appended automatically to keep execution non-interactive.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, subcommand, args }) => {
+    async ({ workingDirectory, subcommand, args }, extra) => {
       if (!ALLOWED_SUBCOMMANDS.has(subcommand)) {
         return {
           isError: true,
@@ -76,7 +77,11 @@ export function registerRunJhipster(server: McpServer): void {
       }
       const fullArgs = [subcommand, ...args];
       if (!fullArgs.includes("--force")) fullArgs.push("--force");
-      const result = await runJhipster({ cwd: workingDirectory, args: fullArgs });
+      const result = await runJhipster({
+        cwd: workingDirectory,
+        args: fullArgs,
+        onData: makeProgressReporter(extra),
+      });
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatRunResult(result) }],

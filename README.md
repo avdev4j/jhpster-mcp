@@ -198,7 +198,7 @@ search Product, Order with elasticsearch
 - **Be specific about field types and validations** (e.g. `price BigDecimal required min(0)`) to save a round-trip to the grammar resource.
 - **For new apps, empty the target dir first.** `create_app_from_jdl` refuses to write into a non-empty directory.
 - **Prefer one big `import_jdl` over many granular calls** for coordinated changes — one generator run instead of N.
-- **Long generations:** initial scaffolds can take 30–90 s. Output is buffered and returned at the end.
+- **Long generations:** initial scaffolds can take 30–90 s. The server streams generator output as MCP progress notifications (one per output line) when the host requests progress, and also returns the full output at the end.
 - **Out of scope:** this MCP won't run `mvn` / `npm` builds, start the app, run tests, or push to git. Use your host's shell tool for that.
 
 ## Safety notes

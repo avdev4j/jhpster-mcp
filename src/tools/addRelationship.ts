@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 import { buildRelationshipJdl, type RelationshipKind } from "../jdl/builders.js";
 
 const sideSchema = z.object({
@@ -35,7 +36,7 @@ export function registerAddRelationship(server: McpServer): void {
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory, kind, from, to }) => {
+    async ({ workingDirectory, kind, from, to }, extra) => {
       const jdl = buildRelationshipJdl({
         kind: kind as RelationshipKind,
         from,
@@ -48,6 +49,7 @@ export function registerAddRelationship(server: McpServer): void {
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["jdl", filename, "--force", "--skip-git"],
+        onData: makeProgressReporter(extra),
       });
 
       return {

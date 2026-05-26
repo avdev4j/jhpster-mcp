@@ -15,6 +15,11 @@ export interface RunOptions {
   env?: NodeJS.ProcessEnv;
   timeoutMs?: number;
   maxBufferBytes?: number;
+  /**
+   * Called for each chunk of output as it arrives, before buffering.
+   * Use to stream progress while the generator runs.
+   */
+  onData?: (chunk: string, stream: "stdout" | "stderr") => void;
 }
 
 const DEFAULT_TIMEOUT_MS = 10 * 60_000;
@@ -56,6 +61,8 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
     }, timeoutMs);
 
     child.stdout.on("data", (chunk: Buffer) => {
+      const text = chunk.toString("utf8");
+      opts.onData?.(text, "stdout");
       bufferedBytes += chunk.length;
       if (bufferedBytes > maxBuffer) {
         if (!killed) {
@@ -64,13 +71,15 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
         }
         return;
       }
-      stdout += chunk.toString("utf8");
+      stdout += text;
     });
 
     child.stderr.on("data", (chunk: Buffer) => {
+      const text = chunk.toString("utf8");
+      opts.onData?.(text, "stderr");
       bufferedBytes += chunk.length;
       if (bufferedBytes > maxBuffer) return;
-      stderr += chunk.toString("utf8");
+      stderr += text;
     });
 
     child.on("error", (err) => {

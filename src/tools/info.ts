@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
+import { makeProgressReporter } from "../progress.js";
 
 const inputShape = {
   workingDirectory: z
@@ -17,11 +18,12 @@ export function registerInfo(server: McpServer): void {
         "Runs `jhipster info` to print versions, configuration, entities, and environment for the project.",
       inputSchema: inputShape,
     },
-    async ({ workingDirectory }) => {
+    async ({ workingDirectory }, extra) => {
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["info"],
         timeoutMs: 60_000,
+        onData: makeProgressReporter(extra),
       });
       return {
         isError: result.exitCode !== 0,
