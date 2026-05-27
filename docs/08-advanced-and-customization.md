@@ -79,7 +79,7 @@ Each arg must match a safe character pattern (`[A-Za-z0-9_./=:@,+-]`) — anythi
 
 → `run_jhipster` with `subcommand=export-jdl, args=["current.jdl"]`.
 
-This is also how you reach **deployment** generators (`kubernetes`, `docker-compose`, the cloud targets) today — they don't have dedicated tools yet (also on the roadmap).
+For `kubernetes` / `docker-compose`, prefer the dedicated [`generate_deployment`](04-tools.md#generate_deployment) tool. `run_jhipster` remains the way to reach the **cloud** targets (`heroku`, the Azure/AWS generators) that don't have dedicated tools yet.
 
 ## Pin the generator and the server versions
 

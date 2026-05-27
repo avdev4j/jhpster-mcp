@@ -47,7 +47,7 @@ You'll meet each in its own reference page. Page [7](07-context-management.md) e
 - **Evolve an existing project** — add entities, relationships, options, or apply raw JDL (`add_entity`, `add_relationship`, `set_option`, `import_jdl`).
 - **Validate and preview** before writing a single file (`validate_jdl`, plus a `dryRun` flag on every applying tool).
 - **Inspect** a project (`info`) and read its live state (resources).
-- **Generate CI/CD** config (`generate_ci_cd`).
+- **Generate CI/CD** config (`generate_ci_cd`) and **docker-compose / kubernetes deployments** (`generate_deployment`).
 - **Escape hatch** for allowlisted subcommands not covered by a dedicated tool (`run_jhipster`).
 - **Guided recipes** as prompts (CRUD monolith, audit fields, monolith→microservices).
 

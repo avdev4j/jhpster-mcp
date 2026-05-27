@@ -9,7 +9,7 @@ Tools are the **verbs** — the agent calls them to do work. You don't call tool
 1. Every tool takes an absolute **`workingDirectory`** (the server has no cwd).
 2. Every JHipster invocation runs **non-interactively** (`--force --skip-git`, `CI=true`).
 
-## The nine tools
+## The ten tools
 
 | Tool | What it does | Read-only? |
 |------|--------------|:---:|
@@ -21,6 +21,7 @@ Tools are the **verbs** — the agent calls them to do work. You don't call tool
 | [`add_relationship`](#add_relationship) | Build + apply one relationship. | |
 | [`set_option`](#set_option) | Apply a JDL option line (paginate/dto/service/…). | |
 | [`generate_ci_cd`](#generate_ci_cd) | Scaffold a CI/CD pipeline. | |
+| [`generate_deployment`](#generate_deployment) | Scaffold a docker-compose / kubernetes deployment. | |
 | [`run_jhipster`](#run_jhipster) | Escape hatch for allowlisted subcommands. | |
 
 The five JDL-applying tools (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) all accept **`dryRun: true`** — see [Dry run](#dry-run-preview-without-writing).
@@ -119,6 +120,23 @@ Runs `jhipster ci-cd --ci-cd=<provider>`.
 | `workingDirectory` | ✅ | |
 | `pipeline` | ✅ | `jenkins` / `github` / `gitlab` / `azure` / `travis` / `circle`. |
 | `extraArgs` | | Extra flags forwarded to `jhipster ci-cd`. |
+
+### `generate_deployment`
+
+Builds a declarative JDL `deployment { … }` block and applies it with `jhipster jdl` — the non-interactive way to scaffold a docker-compose or kubernetes deployment for one or more already-generated apps.
+
+| Arg | Required | Notes |
+|-----|:---:|-------|
+| `workingDirectory` | ✅ | Deployment directory (created if missing); JHipster resolves `appsFolders` relative to it. |
+| `deploymentType` | ✅ | `docker-compose` or `kubernetes`. |
+| `appsFolders` | ✅ | App folder names to include, e.g. `["store", "invoice"]`. |
+| `dockerRepositoryName` | | Docker registry/repository prefix for images. |
+| `monitoring` | | `no` / `prometheus`. |
+| `serviceDiscoveryType` | | `eureka` / `consul` / `no`. |
+| `kubernetesNamespace`, `kubernetesServiceType`, `ingressDomain`, `istio` | | Kubernetes-only options. |
+| `extraArgs` | | Extra flags forwarded to `jhipster jdl`. |
+
+The named apps must already be generated JHipster apps that JHipster can find relative to `workingDirectory` (typically the deployment dir sits alongside them). There's no `dryRun` here — an isolated preview wouldn't have the sibling app folders the generator needs.
 
 ### `run_jhipster`
 

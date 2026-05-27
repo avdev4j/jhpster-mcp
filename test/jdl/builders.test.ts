@@ -12,7 +12,44 @@ import {
   configLinesFromAnswers,
   injectConfigLines,
   buildBlueprintsArgs,
+  buildDeploymentJdl,
 } from "../../src/jdl/builders.js";
+
+describe("buildDeploymentJdl", () => {
+  it("renders a minimal docker-compose deployment", () => {
+    assert.equal(
+      buildDeploymentJdl({ deploymentType: "docker-compose", appsFolders: ["store", "invoice"] }),
+      "deployment {\n  deploymentType docker-compose\n  appsFolders [store, invoice]\n}",
+    );
+  });
+
+  it("renders options, quoting values that need it and keeping arrays bracketed", () => {
+    const jdl = buildDeploymentJdl({
+      deploymentType: "kubernetes",
+      appsFolders: ["store"],
+      options: { kubernetesNamespace: "jhipster", kubernetesServiceType: "Ingress", istio: true },
+    });
+    assert.match(jdl, /deploymentType kubernetes/);
+    assert.match(jdl, /kubernetesNamespace jhipster/);
+    assert.match(jdl, /kubernetesServiceType Ingress/);
+    assert.match(jdl, /istio true/);
+  });
+
+  it("rejects an invalid deploymentType, empty appsFolders, and unsafe entries", () => {
+    assert.throws(
+      () => buildDeploymentJdl({ deploymentType: "swarm" as never, appsFolders: ["a"] }),
+      /Invalid deploymentType/,
+    );
+    assert.throws(
+      () => buildDeploymentJdl({ deploymentType: "docker-compose", appsFolders: [] }),
+      /at least one entry/,
+    );
+    assert.throws(
+      () => buildDeploymentJdl({ deploymentType: "docker-compose", appsFolders: ["a; rm -rf /"] }),
+      /Invalid appsFolders entry/,
+    );
+  });
+});
 
 describe("buildBlueprintsArgs", () => {
   it("returns [] for empty/undefined input", () => {

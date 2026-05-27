@@ -47,7 +47,7 @@ Then ask your host something like *"Create a JHipster monolith in `/tmp/demo` wi
 
 ## What's inside (at a glance)
 
-- **9 tools** — `validate_jdl`, `create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`, `info`, `generate_ci_cd`, `run_jhipster`. ([reference](docs/04-tools.md))
+- **10 tools** — `validate_jdl`, `create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`, `info`, `generate_ci_cd`, `generate_deployment`, `run_jhipster`. ([reference](docs/04-tools.md))
 - **Resources** — the JDL grammar plus live project state (`yo-rc`, `entities`, exported `jdl`). ([reference](docs/05-resources.md))
 - **Prompts** — `scaffold_crud_monolith`, `add_audit_fields`, `monolith_to_microservices`. ([reference](docs/06-prompts.md))
 - **Safe by design** — directory scoping, empty-dir guard, no shell, JDL-injection guards, and isolated preview/`dryRun`. ([details](docs/07-context-management.md))

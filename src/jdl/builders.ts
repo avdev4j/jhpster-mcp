@@ -266,6 +266,61 @@ export function injectConfigLines(jdl: string, lines: string[]): string {
   return jdl.slice(0, insertAt) + inserted + jdl.slice(insertAt);
 }
 
+export interface DeploymentConfig {
+  deploymentType: "docker-compose" | "kubernetes";
+  /** App folder names to include in the deployment (resolved by JHipster). */
+  appsFolders: string[];
+  /** Additional deployment keys (dockerRepositoryName, kubernetesNamespace, …). */
+  options?: Record<string, string | number | boolean | string[]>;
+}
+
+const DEPLOYMENT_TYPES = new Set(["docker-compose", "kubernetes"]);
+const APP_FOLDER = /^[A-Za-z0-9._-]+$/; // folder name / simple relative segment
+const SAFE_VALUE = /^[A-Za-z0-9_./@-]+$/; // unquoted JDL token; else JSON-quoted
+
+function renderDeploymentValue(value: string | number | boolean): string {
+  if (typeof value === "string" && !SAFE_VALUE.test(value)) return JSON.stringify(value);
+  return String(value);
+}
+
+/**
+ * Build a `deployment { ... }` JDL block (the declarative, non-interactive way to
+ * generate docker-compose / kubernetes config via `jhipster jdl`). Validates the
+ * type, app-folder names, and every option value so nothing can smuggle in JDL.
+ */
+export function buildDeploymentJdl(cfg: DeploymentConfig): string {
+  if (!DEPLOYMENT_TYPES.has(cfg.deploymentType)) {
+    throw new Error(`Invalid deploymentType "${cfg.deploymentType}": expected docker-compose or kubernetes`);
+  }
+  if (!cfg.appsFolders || cfg.appsFolders.length === 0) {
+    throw new Error("A deployment requires at least one entry in appsFolders.");
+  }
+  for (const app of cfg.appsFolders) {
+    if (!APP_FOLDER.test(app)) {
+      throw new Error(`Invalid appsFolders entry "${app}": expected a folder name like "store".`);
+    }
+  }
+  const lines = [
+    "deployment {",
+    `  deploymentType ${cfg.deploymentType}`,
+    `  appsFolders [${cfg.appsFolders.join(", ")}]`,
+  ];
+  for (const [key, value] of Object.entries(cfg.options ?? {})) {
+    if (value === undefined) continue;
+    if (!OPTION_KEY.test(key)) throw new Error(`Invalid deployment option key "${key}"`);
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        if (!SAFE_VALUE.test(String(v))) throw new Error(`Invalid value in "${key}": ${v}`);
+      }
+      lines.push(`  ${key} [${value.join(", ")}]`);
+    } else {
+      lines.push(`  ${key} ${renderDeploymentValue(value)}`);
+    }
+  }
+  lines.push("}");
+  return lines.join("\n");
+}
+
 // npm-package-name shape: optional @scope/, then name. Each segment must start
 // with an alphanumeric (so a value can't begin with '-' and pose as a CLI flag).
 const BLUEPRINT_NAME = /^(@[a-z0-9~][a-z0-9-._~]*\/)?[a-z0-9~][a-z0-9-._~]*$/;

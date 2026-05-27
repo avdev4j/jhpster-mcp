@@ -10,6 +10,7 @@ import { registerAddRelationship } from "./tools/addRelationship.js";
 import { registerSetOption } from "./tools/setOption.js";
 import { registerInfo } from "./tools/info.js";
 import { registerGenerateCiCd } from "./tools/generateCiCd.js";
+import { registerGenerateDeployment } from "./tools/generateDeployment.js";
 import { registerRunJhipster } from "./tools/runJhipster.js";
 import { registerJdlGrammar } from "./resources/jdlGrammar.js";
 import { registerProjectState } from "./resources/projectState.js";
@@ -31,6 +32,7 @@ async function main(): Promise<void> {
   registerSetOption(server);
   registerInfo(server);
   registerGenerateCiCd(server);
+  registerGenerateDeployment(server);
   registerRunJhipster(server);
   registerJdlGrammar(server);
   registerProjectState(server);
