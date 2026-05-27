@@ -1,0 +1,6 @@
+# Local-only content workspace.
+# This folder holds dev.to drafts and the series plan for JHipster MCP content.
+# It is intentionally NOT published to the repository — ignore everything here
+# except this rule itself.
+*
+!.gitignore
