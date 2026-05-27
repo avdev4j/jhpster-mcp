@@ -5,6 +5,7 @@ import { formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
 import { runJdlIsolated } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
+import { assertWithinRoot } from "../config.js";
 import { quickLintJdl } from "../jdl/builders.js";
 
 const inputShape = {
@@ -44,6 +45,7 @@ export function registerValidateJdl(server: McpServer): void {
 
       // 2. Validate by generating in an isolated copy (never touches the project).
       if (workingDirectory) {
+        assertWithinRoot(workingDirectory);
         try {
           await access(workingDirectory, constants.F_OK);
         } catch {

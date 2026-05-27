@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
+import { assertWithinRoot } from "../config.js";
 
 const inputShape = {
   workingDirectory: z
@@ -26,6 +27,7 @@ export function registerInfo(server: McpServer): void {
       },
     },
     async ({ workingDirectory }, extra) => {
+      assertWithinRoot(workingDirectory);
       const result = await runJhipster({
         cwd: workingDirectory,
         args: ["info"],

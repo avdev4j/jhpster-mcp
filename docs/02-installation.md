@@ -49,6 +49,10 @@ Then restart the app.
 
 Use the same `command` / `args` pair in whatever MCP config your host exposes.
 
+### Optional: sandbox & pin via environment variables
+
+You can confine the server to a directory, pin the generator version, or force default flags by adding an `env` block to the config above (`JHIPSTER_MCP_ROOT`, `JHIPSTER_MCP_GENERATOR_VERSION`, `JHIPSTER_MCP_DEFAULT_ARGS`). All optional — see [Server configuration](08-advanced-and-customization.md#server-configuration-environment-variables).
+
 ### Pinning and global install
 
 - **Pin a version:** `npx -y jhipster-mcp@0.0.5`.

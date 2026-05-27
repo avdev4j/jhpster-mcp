@@ -4,6 +4,40 @@
 
 Once you're comfortable with the basics, here's how to bend the server to your workflow.
 
+## Server configuration (environment variables)
+
+The server reads three optional environment variables at startup. They're set by your **host's MCP config** (the `env` block alongside `command`/`args`), and they let you confine, pin, and standardize the server — useful when exposing it to less-trusted callers or locking a team to one generator version. **All three are opt-in: with none set, the server behaves exactly as the rest of these docs describe.**
+
+| Variable | Effect |
+|----------|--------|
+| `JHIPSTER_MCP_ROOT` | An **absolute** directory the server refuses to escape. Any `workingDirectory` (or resource `dir`) that isn't the root or inside it — including `..` traversal — is rejected before anything is created or run. A path-jail/sandbox. |
+| `JHIPSTER_MCP_DEFAULT_ARGS` | Whitespace-separated flags appended to **every** `jhipster` invocation (e.g. `--no-insight --skip-install`). Validated for shell-safety at startup. |
+| `JHIPSTER_MCP_GENERATOR_VERSION` | Pins the generator. When set, runs dispatch via `npx -y -p generator-jhipster@<version> jhipster …` instead of your global binary, so the exact version runs regardless of what's installed. |
+
+Example host config:
+
+```json
+{
+  "mcpServers": {
+    "jhipster": {
+      "command": "npx",
+      "args": ["-y", "jhipster-mcp"],
+      "env": {
+        "JHIPSTER_MCP_ROOT": "/Users/me/projects",
+        "JHIPSTER_MCP_GENERATOR_VERSION": "8.7.4",
+        "JHIPSTER_MCP_DEFAULT_ARGS": "--no-insight"
+      }
+    }
+  }
+}
+```
+
+Notes:
+- A bad value (relative root, unsafe default arg, malformed version) makes the server **fail fast at startup** rather than misbehave later.
+- The jail check is **lexical** (it normalizes `..`), so it works even for a target directory that doesn't exist yet — e.g. a new app you're about to scaffold.
+- It applies to **every** tool and resource, including read-only `info` and the project-state resources — nothing reads or writes outside the root.
+- `JHIPSTER_MCP_DEFAULT_ARGS` applies to *every* invocation, so prefer flags that are valid across subcommands.
+
 ## Forward extra flags with `extraArgs`
 
 `create_app_from_jdl`, `import_jdl`, and `generate_ci_cd` accept an `extraArgs` array that's passed straight through to the underlying `jhipster` command. Use it for generator flags this server doesn't model explicitly:
@@ -35,8 +69,8 @@ This is also how you reach **deployment** generators (`kubernetes`, `docker-comp
 
 ## Pin the generator and the server versions
 
-- **Server version:** pin in your host config — `npx -y jhipster-mcp@0.0.5`. See [Installation](02-installation.md#pinning-and-global-install).
-- **Generator version:** the server uses whatever global `jhipster` is on `PATH`. To pin the *generator*, manage your global install (`npm install -g generator-jhipster@<version>`). The server reports nothing about which version it'll use — run `info` (or `jhipster --version` yourself) to confirm.
+- **Server version:** pin in your host config — `npx -y jhipster-mcp@0.0.6`. See [Installation](02-installation.md#pinning-and-global-install).
+- **Generator version:** either manage your global install (`npm install -g generator-jhipster@<version>`), or set **`JHIPSTER_MCP_GENERATOR_VERSION`** (see above) to have the server run that exact version via npx regardless of the global one.
 
 ## Prompting tips
 
@@ -59,7 +93,7 @@ The server snapshots the project (minus `node_modules`/`.git`/build output) into
 
 ## Safety controls (what protects you)
 
-- **Directory scoping** — the server only acts inside the `workingDirectory` you pass; it has no cwd of its own.
+- **Directory scoping** — the server only acts inside the `workingDirectory` you pass; it has no cwd of its own. Tighten this to a fixed sandbox with `JHIPSTER_MCP_ROOT` (see [Server configuration](#server-configuration-environment-variables)).
 - **Opt-in backup/rollback** — `backup: true` snapshots an existing project before a `--force` apply (see above).
 - **Empty-dir guard** — `create_app_from_jdl` won't overwrite a populated directory (`.git`/`.DS_Store` ignored).
 - **No shell** — every spawn uses `shell: false`; `run_jhipster` validates the subcommand against the allowlist and rejects metacharacter args.

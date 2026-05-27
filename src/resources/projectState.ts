@@ -3,6 +3,7 @@ import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { readFile, readdir, access, constants } from "node:fs/promises";
 import path from "node:path";
 import { exportJdlIsolated } from "../apply.js";
+import { assertWithinRoot } from "../config.js";
 
 /**
  * Resources expose the current project state so an agent can read what exists
@@ -24,6 +25,7 @@ function dirOf(variables: Record<string, string | string[]>): string {
   if (!path.isAbsolute(dir)) {
     throw new Error(`dir must be an absolute path, got: ${dir}`);
   }
+  assertWithinRoot(dir);
   return dir;
 }
 

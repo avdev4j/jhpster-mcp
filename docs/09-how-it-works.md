@@ -13,6 +13,7 @@ You don't need this page to *use* the server — it's for the curious, and for a
 ```
 src/
   index.ts            registers tools + resources + prompts, connects stdio
+  config.ts           env-driven sandbox root, default flags, pinned generator version
   jhipster.ts         spawn wrapper around the `jhipster` CLI + result formatting
   apply.ts            applyJdl() — shared persist-vs-dry-run; runJdlIsolated(); exportJdlIsolated()
   progress.ts         streams generator output as MCP progress notifications
@@ -32,7 +33,7 @@ All CLI execution funnels through one `runJhipster()` function. It:
 - enforces a **timeout** (10 min default) and a **max output buffer** (8 MB), killing the child if either is exceeded,
 - turns a missing binary (`ENOENT`) into a clear "install generator-jhipster globally" message.
 
-Every invocation appends `--force --skip-git`. The server never runs `jhipster` interactively.
+Every invocation appends `--force --skip-git`. The server never runs `jhipster` interactively. The spawn command and arguments are resolved through `config.ts`: an unpinned setup runs the global `jhipster`, a pinned `JHIPSTER_MCP_GENERATOR_VERSION` dispatches via `npx`, and `JHIPSTER_MCP_DEFAULT_ARGS` are appended here. The sandbox root (`JHIPSTER_MCP_ROOT`) is **not** enforced in this wrapper — it's checked at the user-facing boundary (tool handlers, `applyJdl`, resource `dirOf`) so the isolated preview/export temp dirs, which live outside any root, aren't rejected.
 
 ## Applying JDL (`apply.ts`)
 

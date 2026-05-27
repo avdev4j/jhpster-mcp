@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
+import { assertWithinRoot } from "../config.js";
 import {
   analyzeAppConfig,
   configLinesFromAnswers,
@@ -113,6 +114,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
       },
     },
     async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
+      assertWithinRoot(workingDirectory);
       await mkdir(workingDirectory, { recursive: true });
       const entries = await readdir(workingDirectory);
       const allowList = new Set([".git", ".DS_Store"]);

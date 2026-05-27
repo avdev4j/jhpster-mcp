@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { access, constants } from "node:fs/promises";
 import path from "node:path";
+import { getConfig, jhipsterCommand } from "./config.js";
 
 export interface RunResult {
   exitCode: number;
@@ -42,8 +43,13 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxBuffer = opts.maxBufferBytes ?? DEFAULT_MAX_BUFFER;
 
+  const cfg = getConfig();
+  const { command, prefixArgs } = jhipsterCommand(cfg);
+  // prefix (npx wrapper when pinned) + caller args + configured default flags
+  const allArgs = [...prefixArgs, ...opts.args, ...cfg.defaultArgs];
+
   return new Promise<RunResult>((resolve, reject) => {
-    const child = spawn("jhipster", opts.args, {
+    const child = spawn(command, allArgs, {
       cwd: opts.cwd,
       env: { ...process.env, ...opts.env, CI: "true" },
       shell: false,
@@ -85,11 +91,11 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
     child.on("error", (err) => {
       clearTimeout(timer);
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        reject(
-          new Error(
-            "`jhipster` CLI not found on PATH. Install generator-jhipster globally: npm install -g generator-jhipster",
-          ),
-        );
+        const hint =
+          command === "npx"
+            ? "`npx` not found on PATH (needed for a pinned JHIPSTER_MCP_GENERATOR_VERSION)."
+            : "`jhipster` CLI not found on PATH. Install generator-jhipster globally: npm install -g generator-jhipster";
+        reject(new Error(hint));
         return;
       }
       reject(err);
@@ -97,7 +103,7 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
 
     child.on("close", (code) => {
       clearTimeout(timer);
-      const command = `jhipster ${opts.args.join(" ")}`;
+      const commandLine = `${command} ${allArgs.join(" ")}`.trimEnd();
       if (killed) {
         resolve({
           exitCode: code ?? -1,
@@ -105,11 +111,11 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
           stderr:
             stderr +
             `\n[jhipster-mcp] process terminated (timeout=${timeoutMs}ms or buffer=${maxBuffer}B exceeded)`,
-          command,
+          command: commandLine,
         });
         return;
       }
-      resolve({ exitCode: code ?? -1, stdout, stderr, command });
+      resolve({ exitCode: code ?? -1, stdout, stderr, command: commandLine });
     });
   });
 }

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { runJhipster, formatRunResult, type RunResult } from "./jhipster.js";
 import { parseFileChanges, summarizeChanges } from "./result.js";
+import { assertWithinRoot } from "./config.js";
 import type { OnData } from "./progress.js";
 
 const BASE_ARGS = ["--force", "--skip-git"];
@@ -144,6 +145,7 @@ export async function exportJdlIsolated(contextDir: string): Promise<{ jdl: stri
  * JDL-applying tool.
  */
 export async function applyJdl(opts: ApplyJdlOptions): Promise<ApplyJdlResult> {
+  assertWithinRoot(opts.workingDirectory);
   const extraArgs = opts.extraArgs ?? [];
 
   if (opts.dryRun) {
