@@ -69,6 +69,16 @@ The server runs cheap guards **before** spawning JHipster:
 
 If a guard fails, you get a plain error message and **nothing is generated** — no half-written project to clean up. These pre-flight errors are returned as errors *without* structured output (the structured schema only describes successful generator runs).
 
+## 7. Elicitation: asking instead of guessing
+
+Sometimes the missing context is *yours*, not the project's. When you ask to scaffold an app but the JDL leaves out a key decision — **database, authentication, or client framework** — the server doesn't silently pick a default and generate the wrong app. If your host supports **MCP elicitation**, `create_app_from_jdl` pauses and asks you to choose from a short menu, then injects your answers into the JDL before generating.
+
+- **Accept** → your choices are written into the `application { config { … } }` block.
+- **Decline** → it proceeds with JHipster's built-in defaults.
+- **Cancel** → nothing is generated.
+
+It only asks for **genuinely missing** keys, only for a **single-application** JDL (microservice topologies are too ambiguous to ask one set of answers), and **never on a dry run**. If your host doesn't support elicitation, the tool behaves exactly as before — defaults apply, no interruption. This turns a one-shot generate into a quick conversation, and saves a multi-minute run that would have produced the wrong thing.
+
 ## Putting it together
 
 A typical "add a field to an existing entity" flow shows all of this working:

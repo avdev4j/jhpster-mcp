@@ -8,7 +8,71 @@ import {
   buildRelationshipJdl,
   quickLintJdl,
   withTempJdlFile,
+  analyzeAppConfig,
+  configLinesFromAnswers,
+  injectConfigLines,
 } from "../../src/jdl/builders.js";
+
+describe("analyzeAppConfig", () => {
+  const full = `application { config { baseName a, applicationType monolith, databaseType sql, authenticationType jwt, clientFramework angular } entities * }`;
+
+  it("reports no missing keys when all are present", () => {
+    const a = analyzeAppConfig(full);
+    assert.equal(a.appBlockCount, 1);
+    assert.equal(a.hasConfigBlock, true);
+    assert.deepEqual(a.missing, []);
+  });
+
+  it("detects each missing key", () => {
+    const a = analyzeAppConfig(`application { config { baseName a } }`);
+    assert.deepEqual(a.missing.sort(), ["authentication", "clientFramework", "database"]);
+  });
+
+  it("counts multiple application blocks (microservices)", () => {
+    const jdl = `application { config { baseName gw } } application { config { baseName svc } }`;
+    assert.equal(analyzeAppConfig(jdl).appBlockCount, 2);
+  });
+});
+
+describe("configLinesFromAnswers", () => {
+  it("expands a SQL prod database to three lines", () => {
+    assert.deepEqual(configLinesFromAnswers({ database: "postgresql" }), [
+      "databaseType sql",
+      "prodDatabaseType postgresql",
+      "devDatabaseType h2Disk",
+    ]);
+  });
+
+  it("maps mongodb to a single databaseType line and 'none' to no", () => {
+    assert.deepEqual(configLinesFromAnswers({ database: "mongodb" }), ["databaseType mongodb"]);
+    assert.deepEqual(configLinesFromAnswers({ database: "none" }), ["databaseType no"]);
+  });
+
+  it("maps auth and client (client 'none' → no)", () => {
+    assert.deepEqual(configLinesFromAnswers({ authentication: "oauth2", clientFramework: "none" }), [
+      "authenticationType oauth2",
+      "clientFramework no",
+    ]);
+  });
+
+  it("ignores unknown values defensively", () => {
+    assert.deepEqual(configLinesFromAnswers({ database: "rm -rf", authentication: "bogus" }), []);
+  });
+});
+
+describe("injectConfigLines", () => {
+  it("inserts lines just inside the first config block", () => {
+    const out = injectConfigLines(`application {\n  config {\n    baseName a\n  }\n}`, [
+      "databaseType sql",
+    ]);
+    assert.match(out, /config \{\n {4}databaseType sql\n {4}baseName a/);
+  });
+
+  it("returns the JDL unchanged with no lines or no config block", () => {
+    assert.equal(injectConfigLines("entity X {}", ["databaseType sql"]), "entity X {}");
+    assert.equal(injectConfigLines("application { config { } }", []), "application { config { } }");
+  });
+});
 
 describe("buildEntityJdl", () => {
   it("renders an empty entity", () => {

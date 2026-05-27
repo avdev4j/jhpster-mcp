@@ -185,6 +185,87 @@ export function quickLintJdl(jdl: string): string[] {
   return issues;
 }
 
+/**
+ * Application-config decisions this server can elicit when a JDL `application`
+ * block leaves them unspecified (JHipster would otherwise silently default them).
+ * The option lists are the single source of truth shared by the elicitation
+ * schema and the answer→JDL mapping below.
+ */
+export type ElicitableConfigKey = "database" | "authentication" | "clientFramework";
+
+export const DATABASE_OPTIONS = [
+  "postgresql",
+  "mysql",
+  "mariadb",
+  "mssql",
+  "oracle",
+  "mongodb",
+  "cassandra",
+  "neo4j",
+  "none",
+] as const;
+export const AUTH_OPTIONS = ["jwt", "oauth2", "session"] as const;
+export const CLIENT_OPTIONS = ["angular", "react", "vue", "none"] as const;
+
+const SQL_PROD = new Set(["postgresql", "mysql", "mariadb", "mssql", "oracle"]);
+const APP_BLOCK = /\bapplication\s*\{/g;
+
+export interface AppConfigAnalysis {
+  /** How many `application { ... }` blocks the JDL declares. */
+  appBlockCount: number;
+  /** Whether there's a `config { ... }` block to inject into. */
+  hasConfigBlock: boolean;
+  /** Which elicitable keys are absent from the JDL. */
+  missing: ElicitableConfigKey[];
+}
+
+/** Detect, without a full parse, how many app blocks exist and which key config decisions are unspecified. */
+export function analyzeAppConfig(jdl: string): AppConfigAnalysis {
+  const appBlockCount = (jdl.match(APP_BLOCK) ?? []).length;
+  const hasConfigBlock = /\bconfig\s*\{/.test(jdl);
+  const missing: ElicitableConfigKey[] = [];
+  if (!/\bdatabaseType\b/.test(jdl)) missing.push("database");
+  if (!/\bauthenticationType\b/.test(jdl)) missing.push("authentication");
+  if (!/\bclientFramework\b/.test(jdl)) missing.push("clientFramework");
+  return { appBlockCount, hasConfigBlock, missing };
+}
+
+/** Map elicited answers to JDL config lines. Unknown/blank values are ignored (defensive against a misbehaving client). */
+export function configLinesFromAnswers(
+  answers: Partial<Record<ElicitableConfigKey, string>>,
+): string[] {
+  const lines: string[] = [];
+  const db = answers.database;
+  if (db && (DATABASE_OPTIONS as readonly string[]).includes(db)) {
+    if (SQL_PROD.has(db)) {
+      lines.push("databaseType sql", `prodDatabaseType ${db}`, "devDatabaseType h2Disk");
+    } else if (db === "none") {
+      lines.push("databaseType no");
+    } else {
+      lines.push(`databaseType ${db}`);
+    }
+  }
+  const auth = answers.authentication;
+  if (auth && (AUTH_OPTIONS as readonly string[]).includes(auth)) {
+    lines.push(`authenticationType ${auth}`);
+  }
+  const client = answers.clientFramework;
+  if (client && (CLIENT_OPTIONS as readonly string[]).includes(client)) {
+    lines.push(`clientFramework ${client === "none" ? "no" : client}`);
+  }
+  return lines;
+}
+
+/** Insert config lines just inside the first `config {` block of the JDL. Returns the JDL unchanged if there's no such block or no lines. */
+export function injectConfigLines(jdl: string, lines: string[]): string {
+  if (lines.length === 0) return jdl;
+  const m = /\bconfig\s*\{/.exec(jdl);
+  if (!m) return jdl;
+  const insertAt = m.index + m[0].length;
+  const inserted = lines.map((l) => `\n    ${l}`).join("");
+  return jdl.slice(0, insertAt) + inserted + jdl.slice(insertAt);
+}
+
 export async function withTempJdlFile<T>(
   content: string,
   fn: (filePath: string) => Promise<T>,

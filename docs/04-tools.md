@@ -56,6 +56,8 @@ Scaffolds a **new** application: writes the JDL into the target directory and ru
 | `dryRun` | | Preview without writing. |
 | `extraArgs` | | Extra flags forwarded to `jhipster jdl` (e.g. `["--skip-install"]`). |
 
+> **Asks before defaulting:** if your JDL's single `application` block omits the database, authentication, or client framework, and your host supports MCP elicitation, the tool will ask you to choose (rather than silently defaulting) before it generates. Decline to accept JHipster's defaults, or cancel to abort. Skipped on a dry run and when the JDL already sets them. See [page 7](07-context-management.md#7-elicitation-asking-instead-of-guessing).
+
 ### `import_jdl`
 
 Applies arbitrary JDL to an **existing** project (entities, relationships, options). The most flexible path — prefer it when several changes go together (one generator run instead of many).
