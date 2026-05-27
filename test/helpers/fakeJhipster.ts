@@ -19,7 +19,22 @@ export async function installFakeJhipster(): Promise<FakeJhipster> {
   const binDir = await mkdtemp(path.join(tmpdir(), "fake-jhipster-"));
   const binPath = path.join(binDir, "jhipster");
   const script = `#!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
 const args = process.argv.slice(2);
+
+// export-jdl <file>: write a JDL file so the upgrade preview can regenerate from it.
+if (args[0] === "export-jdl" && args[1]) {
+  fs.writeFileSync(path.resolve(process.cwd(), args[1]), process.env.FAKE_JHIPSTER_EXPORT_JDL || "application {}\\n");
+}
+// FAKE_JHIPSTER_WRITE = JSON array of [relpath, content]; written into cwd (simulates generation).
+if (process.env.FAKE_JHIPSTER_WRITE) {
+  for (const [rel, content] of JSON.parse(process.env.FAKE_JHIPSTER_WRITE)) {
+    const dest = path.resolve(process.cwd(), rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, content);
+  }
+}
 const extraLines = parseInt(process.env.FAKE_JHIPSTER_LINES || "0", 10);
 for (let i = 1; i <= extraLines; i++) {
   process.stdout.write("step " + i + "\\n");

@@ -51,10 +51,10 @@ Each tool carries behavioral **hints** so your host can make smart approval deci
 
 | Hint | Meaning | Tools |
 |------|---------|-------|
-| `readOnlyHint` | Doesn't modify anything | `info`, `validate_jdl`, `project_commands`, `upgrade_advisor` |
+| `readOnlyHint` | Doesn't modify anything | `info`, `validate_jdl`, `project_commands`, `upgrade_advisor`, `preview_upgrade` |
 | `destructiveHint` | Can overwrite files (`--force`) | the five applying tools, `generate_ci_cd`, `run_jhipster` |
 | `idempotentHint` | Re-running with the same args converges | the applying tools (except `create_app_from_jdl`) |
-| `openWorldHint` | May reach external systems | `run_jhipster` (it allows deploy subcommands) |
+| `openWorldHint` | May reach external systems | `run_jhipster` (deploy subcommands); `preview_upgrade` (may fetch a generator version via npx) |
 
 A host can **auto-approve** the read-only tools (no confirmation prompt) and **gate** the destructive ones. The hints are static, so they describe the **default** behavior — note that an applying tool is flagged destructive even though `dryRun: true` makes that particular call safe; the host gates on the worst case, which is the right default.
 

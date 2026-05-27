@@ -142,6 +142,59 @@ export async function exportJdlIsolated(contextDir: string): Promise<{ jdl: stri
   }
 }
 
+export interface RegenResult {
+  /** Temp dir containing the regenerated project. Caller MUST `rm` it when done. */
+  dir: string;
+  exportResult: RunResult;
+  regenResult: RunResult;
+  /** True when export-jdl produced a usable JDL to regenerate from. */
+  exported: boolean;
+}
+
+/**
+ * Regenerate a project from its own model into a throwaway temp dir, optionally
+ * with a different generator version (via npx), for an upgrade preview. Copies
+ * the project's `.yo-rc.json` + `.jhipster/`, runs `export-jdl` to capture the
+ * model, then `jhipster jdl` to regenerate. The temp dir is returned (not
+ * deleted) so the caller can diff it against the current project.
+ */
+export async function regenerateProjectIsolated(opts: {
+  contextDir: string;
+  generatorVersion?: string;
+  onData?: OnData;
+}): Promise<RegenResult> {
+  const dir = await mkdtemp(path.join(tmpdir(), "jhipster-mcp-regen-"));
+  await copyProjectContext(opts.contextDir, dir);
+  const jdlFile = "upgrade-preview.jdl";
+
+  const exportResult = await runJhipster({
+    cwd: dir,
+    args: ["export-jdl", jdlFile, "--skip-git"],
+    generatorVersion: opts.generatorVersion,
+    onData: opts.onData,
+  });
+
+  let exported = false;
+  try {
+    await access(path.join(dir, jdlFile), constants.F_OK);
+    exported = true;
+  } catch {
+    /* nothing exported (e.g. not a JHipster project) */
+  }
+
+  let regenResult = exportResult;
+  if (exported) {
+    regenResult = await runJhipster({
+      cwd: dir,
+      args: ["jdl", jdlFile, ...BASE_ARGS, "--skip-install"],
+      generatorVersion: opts.generatorVersion,
+      onData: opts.onData,
+    });
+  }
+
+  return { dir, exportResult, regenResult, exported };
+}
+
 /**
  * Persist the JDL and apply it via `jhipster jdl`, or (when `dryRun`) generate in
  * an isolated copy and discard it. Centralises the branching shared by every

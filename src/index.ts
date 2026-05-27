@@ -13,6 +13,7 @@ import { registerGenerateCiCd } from "./tools/generateCiCd.js";
 import { registerGenerateDeployment } from "./tools/generateDeployment.js";
 import { registerProjectCommands } from "./tools/projectCommands.js";
 import { registerUpgradeAdvisor } from "./tools/upgradeAdvisor.js";
+import { registerPreviewUpgrade } from "./tools/previewUpgrade.js";
 import { registerRunJhipster } from "./tools/runJhipster.js";
 import { registerJdlGrammar } from "./resources/jdlGrammar.js";
 import { registerProjectState } from "./resources/projectState.js";
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
   registerGenerateDeployment(server);
   registerProjectCommands(server);
   registerUpgradeAdvisor(server);
+  registerPreviewUpgrade(server);
   registerRunJhipster(server);
   registerJdlGrammar(server);
   registerProjectState(server);

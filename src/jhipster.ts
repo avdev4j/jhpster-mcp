@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { access, constants } from "node:fs/promises";
 import path from "node:path";
-import { getConfig, jhipsterCommand } from "./config.js";
+import { getConfig, jhipsterCommand, jhipsterCommandForVersion } from "./config.js";
 
 export interface RunResult {
   exitCode: number;
@@ -21,6 +21,8 @@ export interface RunOptions {
    * Use to stream progress while the generator runs.
    */
   onData?: (chunk: string, stream: "stdout" | "stderr") => void;
+  /** Run a specific generator version via npx, overriding the global/pinned binary (used by the upgrade preview). */
+  generatorVersion?: string;
 }
 
 const DEFAULT_TIMEOUT_MS = 10 * 60_000;
@@ -44,7 +46,9 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
   const maxBuffer = opts.maxBufferBytes ?? DEFAULT_MAX_BUFFER;
 
   const cfg = getConfig();
-  const { command, prefixArgs } = jhipsterCommand(cfg);
+  const { command, prefixArgs } = opts.generatorVersion
+    ? jhipsterCommandForVersion(opts.generatorVersion)
+    : jhipsterCommand(cfg);
   // prefix (npx wrapper when pinned) + caller args + configured default flags
   const allArgs = [...prefixArgs, ...opts.args, ...cfg.defaultArgs];
 

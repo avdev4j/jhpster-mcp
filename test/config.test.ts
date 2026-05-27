@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { readConfig, assertWithinRoot, jhipsterCommand } from "../src/config.js";
+import { readConfig, assertWithinRoot, jhipsterCommand, jhipsterCommandForVersion } from "../src/config.js";
 
 describe("readConfig", () => {
   it("defaults to empty when nothing is set", () => {
@@ -61,5 +61,17 @@ describe("jhipsterCommand", () => {
       command: "npx",
       prefixArgs: ["-y", "-p", "generator-jhipster@8.7.4", "jhipster"],
     });
+  });
+});
+
+describe("jhipsterCommandForVersion", () => {
+  it("builds an npx invocation for an explicit version", () => {
+    assert.deepEqual(jhipsterCommandForVersion("8.0.0"), {
+      command: "npx",
+      prefixArgs: ["-y", "-p", "generator-jhipster@8.0.0", "jhipster"],
+    });
+  });
+  it("rejects an unsafe version string", () => {
+    assert.throws(() => jhipsterCommandForVersion("8;rm"), /Invalid generator version/);
   });
 });

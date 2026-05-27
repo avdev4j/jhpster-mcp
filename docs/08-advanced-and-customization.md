@@ -62,6 +62,24 @@ Common picks: `--skip-install`, `--skip-client`, `--skip-server`. For blueprints
 - It flows into a **dry run** too, so you can preview a blueprint generation.
 - **You must install the blueprint** where `jhipster` runs (e.g. `npm i -g generator-jhipster-kotlin`); this server only passes the flag. After the app is first created with a blueprint, it's recorded in `.yo-rc.json` and applied automatically on later runs — so you usually only need `blueprints` at creation time.
 
+## Upgrading your JHipster version
+
+Upgrading a JHipster app between generator versions has always been painful. Two read-only tools help you scope and preview it — neither runs the upgrade or touches git:
+
+1. **[`upgrade_advisor`](04-tools.md#upgrade_advisor)** — the pre-flight. Reports your current version, the bump type vs. a target, a risk rating, project-specific considerations (blueprints, microservices, entity count), a checklist, and links to the release notes. Start here to understand scope.
+
+   > How risky is moving `/Users/me/projects/shop` from its current version to 8.7.4?
+
+2. **[`preview_upgrade`](04-tools.md#preview_upgrade)** — the diff. Regenerates your project's model in an isolated temp copy (optionally with a `targetVersion`, fetched via `npx`) and shows which files would be **added / removed / modified** — without writing anything.
+
+   > Show me what upgrading `/Users/me/projects/shop` to 8.7.4 would change.
+
+How to read the preview:
+- **`modified` mixes two things**: changes the new generator makes *and* your own customizations to generated files. Review each — that's the real work of any JHipster upgrade.
+- It's **git-free by design**. Apply whatever you want through your own git workflow (commit first so the eventual changes are easy to review).
+- For the exact **breaking changes** between versions, consult the release notes the advisor links — the tools gather facts and diffs, but don't enumerate version-specific breaking changes.
+- The official, git-based `jhipster upgrade` is intentionally **not** wrapped (it would break the no-git principle); it remains reachable via [`run_jhipster`](#the-run_jhipster-escape-hatch) for the adventurous.
+
 ## The `run_jhipster` escape hatch
 
 When no dedicated tool covers what you need, `run_jhipster` runs an **allowlisted** subcommand directly. The allowlist:

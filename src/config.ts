@@ -87,8 +87,14 @@ export function assertWithinRoot(dir: string, cfg: ServerConfig = getConfig()): 
  * version runs regardless of what's installed globally.
  */
 export function jhipsterCommand(cfg: ServerConfig = getConfig()): { command: string; prefixArgs: string[] } {
-  if (cfg.generatorVersion) {
-    return { command: "npx", prefixArgs: ["-y", "-p", `generator-jhipster@${cfg.generatorVersion}`, "jhipster"] };
-  }
+  if (cfg.generatorVersion) return jhipsterCommandForVersion(cfg.generatorVersion);
   return { command: "jhipster", prefixArgs: [] };
+}
+
+/** Build the npx invocation that runs an explicit generator version (used by the upgrade preview). */
+export function jhipsterCommandForVersion(version: string): { command: string; prefixArgs: string[] } {
+  if (!VERSION_OK.test(version)) {
+    throw new Error(`Invalid generator version/tag: "${version}"`);
+  }
+  return { command: "npx", prefixArgs: ["-y", "-p", `generator-jhipster@${version}`, "jhipster"] };
 }
