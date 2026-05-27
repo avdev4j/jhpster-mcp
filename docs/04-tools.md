@@ -54,6 +54,7 @@ Scaffolds a **new** application: writes the JDL into the target directory and ru
 | `jdl` | ✅ | Full JDL with at least one `application { config { … } }` block. |
 | `jdlFilename` | | Defaults to `app.jdl`. |
 | `dryRun` | | Preview without writing. |
+| `blueprints` | | Generator blueprints, e.g. `["kotlin"]` → `--blueprints kotlin`. Must be installed where jhipster runs. See [Advanced → Blueprints](08-advanced-and-customization.md#blueprints). |
 | `extraArgs` | | Extra flags forwarded to `jhipster jdl` (e.g. `["--skip-install"]`). |
 
 > **Asks before defaulting:** if your JDL's single `application` block omits the database, authentication, or client framework, and your host supports MCP elicitation, the tool will ask you to choose (rather than silently defaulting) before it generates. Decline to accept JHipster's defaults, or cancel to abort. Skipped on a dry run and when the JDL already sets them. See [page 7](07-context-management.md#7-elicitation-asking-instead-of-guessing).
@@ -68,6 +69,8 @@ Applies arbitrary JDL to an **existing** project (entities, relationships, optio
 | `jdl` | ✅ | JDL to apply. |
 | `jdlFilename` | | Defaults to `changes.jdl`. |
 | `dryRun` | | Preview without writing. |
+| `backup` | | Snapshot the project before applying (see [Safe-apply](#safe-apply-backup--rollback)). |
+| `blueprints` | | Generator blueprints → `--blueprints`. Usually unnecessary after the app was created with them. See [Advanced → Blueprints](08-advanced-and-customization.md#blueprints). |
 | `extraArgs` | | Extra flags forwarded to `jhipster jdl`. |
 
 ### `add_entity`

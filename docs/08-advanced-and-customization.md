@@ -46,7 +46,21 @@ Notes:
 
 → `create_app_from_jdl` with `extraArgs: ["--skip-install"]`.
 
-Common picks: `--skip-install`, `--skip-client`, `--skip-server`, `--blueprints <name>` (blueprint support is on the [roadmap](ROADMAP.md) as a first-class option, but reachable today via `extraArgs`).
+Common picks: `--skip-install`, `--skip-client`, `--skip-server`. For blueprints, prefer the dedicated `blueprints` parameter below over `extraArgs`.
+
+## Blueprints
+
+[Blueprints](https://www.jhipster.tech/modules/extending-and-customizing/) swap or extend parts of the generator (e.g. `kotlin`, `nodejs`, `dotnetcore`, `ionic`). `create_app_from_jdl` and `import_jdl` take a first-class **`blueprints`** array, mapped to `--blueprints`:
+
+> Scaffold the app in `/tmp/shop` from this JDL using the `kotlin` blueprint.
+
+→ `create_app_from_jdl` with `blueprints: ["kotlin"]` → runs `jhipster jdl … --blueprints kotlin`.
+
+- Pass several: `["kotlin", "ionic"]` → `--blueprints kotlin,ionic`.
+- Scoped packages work: `["@my-org/generator-jhipster-foo"]`.
+- Names are **validated** (npm-package shape) so they can't smuggle in extra CLI flags or shell characters.
+- It flows into a **dry run** too, so you can preview a blueprint generation.
+- **You must install the blueprint** where `jhipster` runs (e.g. `npm i -g generator-jhipster-kotlin`); this server only passes the flag. After the app is first created with a blueprint, it's recorded in `.yo-rc.json` and applied automatically on later runs — so you usually only need `blueprints` at creation time.
 
 ## The `run_jhipster` escape hatch
 

@@ -28,6 +28,12 @@ const inputShape = {
     .describe(
       "Snapshot the project into a temp backup dir before this `--force` apply (excludes node_modules/.git/build output) so it can be rolled back. Ignored on a dry run. The backup path is surfaced in the result.",
     ),
+  blueprints: z
+    .array(z.string())
+    .default([])
+    .describe(
+      "Generator blueprints to apply (e.g. ['kotlin']), passed as `--blueprints`. Usually unnecessary after the app was created with them (they're recorded in .yo-rc.json). Each must be installed in the environment running jhipster.",
+    ),
   extraArgs: z
     .array(z.string())
     .default([])
@@ -50,13 +56,14 @@ export function registerImportJdl(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async ({ workingDirectory, jdl, jdlFilename, dryRun, backup, extraArgs }, extra) => {
+    async ({ workingDirectory, jdl, jdlFilename, dryRun, backup, blueprints, extraArgs }, extra) => {
       const result = await applyJdl({
         workingDirectory,
         jdl,
         filename: jdlFilename,
         dryRun,
         backup,
+        blueprints,
         extraArgs,
         onData: makeProgressReporter(extra),
       });

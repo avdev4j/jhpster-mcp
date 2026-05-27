@@ -11,7 +11,31 @@ import {
   analyzeAppConfig,
   configLinesFromAnswers,
   injectConfigLines,
+  buildBlueprintsArgs,
 } from "../../src/jdl/builders.js";
+
+describe("buildBlueprintsArgs", () => {
+  it("returns [] for empty/undefined input", () => {
+    assert.deepEqual(buildBlueprintsArgs(undefined), []);
+    assert.deepEqual(buildBlueprintsArgs([]), []);
+    assert.deepEqual(buildBlueprintsArgs(["  ", ""]), []);
+  });
+
+  it("builds a comma-joined --blueprints pair", () => {
+    assert.deepEqual(buildBlueprintsArgs(["kotlin"]), ["--blueprints", "kotlin"]);
+    assert.deepEqual(buildBlueprintsArgs(["kotlin", "ionic"]), ["--blueprints", "kotlin,ionic"]);
+    assert.deepEqual(buildBlueprintsArgs(["@scope/generator-jhipster-foo"]), [
+      "--blueprints",
+      "@scope/generator-jhipster-foo",
+    ]);
+  });
+
+  it("rejects names with shell metacharacters or flags", () => {
+    assert.throws(() => buildBlueprintsArgs(["kotlin; rm -rf /"]), /Invalid blueprint name/);
+    assert.throws(() => buildBlueprintsArgs(["--skip-server"]), /Invalid blueprint name/);
+    assert.throws(() => buildBlueprintsArgs(["a b"]), /Invalid blueprint name/);
+  });
+});
 
 describe("analyzeAppConfig", () => {
   const full = `application { config { baseName a, applicationType monolith, databaseType sql, authenticationType jwt, clientFramework angular } entities * }`;

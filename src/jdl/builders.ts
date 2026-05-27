@@ -266,6 +266,28 @@ export function injectConfigLines(jdl: string, lines: string[]): string {
   return jdl.slice(0, insertAt) + inserted + jdl.slice(insertAt);
 }
 
+// npm-package-name shape: optional @scope/, then name. Each segment must start
+// with an alphanumeric (so a value can't begin with '-' and pose as a CLI flag).
+const BLUEPRINT_NAME = /^(@[a-z0-9~][a-z0-9-._~]*\/)?[a-z0-9~][a-z0-9-._~]*$/;
+
+/**
+ * Build the `--blueprints a,b` argument pair for the generator, validating each
+ * name (so a blueprint name can't smuggle in extra flags or shell metacharacters).
+ * Returns `[]` when no blueprints are requested.
+ */
+export function buildBlueprintsArgs(names: string[] | undefined): string[] {
+  const list = (names ?? []).map((n) => n.trim()).filter((n) => n.length > 0);
+  if (list.length === 0) return [];
+  for (const name of list) {
+    if (!BLUEPRINT_NAME.test(name)) {
+      throw new Error(
+        `Invalid blueprint name "${name}": expected an npm package name like "kotlin" or "@scope/generator-jhipster-foo".`,
+      );
+    }
+  }
+  return ["--blueprints", list.join(",")];
+}
+
 export async function withTempJdlFile<T>(
   content: string,
   fn: (filePath: string) => Promise<T>,

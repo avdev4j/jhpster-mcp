@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { runJhipster, formatRunResult, type RunResult } from "./jhipster.js";
 import { parseFileChanges, summarizeChanges } from "./result.js";
+import { buildBlueprintsArgs } from "./jdl/builders.js";
 import { assertWithinRoot } from "./config.js";
 import type { OnData } from "./progress.js";
 
@@ -32,6 +33,8 @@ export interface ApplyJdlOptions {
   dryRun?: boolean;
   /** When true (and not a dry run), snapshot the project before the `--force` run so it can be restored. */
   backup?: boolean;
+  /** Generator blueprints to apply, mapped to `--blueprints a,b` (validated). */
+  blueprints?: string[];
   onData?: OnData;
 }
 
@@ -146,7 +149,8 @@ export async function exportJdlIsolated(contextDir: string): Promise<{ jdl: stri
  */
 export async function applyJdl(opts: ApplyJdlOptions): Promise<ApplyJdlResult> {
   assertWithinRoot(opts.workingDirectory);
-  const extraArgs = opts.extraArgs ?? [];
+  // Blueprint flags ride alongside any caller-supplied extra args.
+  const extraArgs = [...buildBlueprintsArgs(opts.blueprints), ...(opts.extraArgs ?? [])];
 
   if (opts.dryRun) {
     const result = await runJdlIsolated({

@@ -89,6 +89,12 @@ const inputShape = {
     .describe(
       "Preview only: run `jhipster jdl --dry-run` so no files are written (the JDL is staged in a temp file). Use to validate and see what would be generated.",
     ),
+  blueprints: z
+    .array(z.string())
+    .default([])
+    .describe(
+      "Generator blueprints to apply (e.g. ['kotlin'] or ['@scope/generator-jhipster-foo']), passed as `--blueprints`. Each blueprint must already be installed in the environment running jhipster.",
+    ),
   extraArgs: z
     .array(z.string())
     .default([])
@@ -113,7 +119,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
+    async ({ workingDirectory, jdl, jdlFilename, dryRun, blueprints, extraArgs }, extra) => {
       assertWithinRoot(workingDirectory);
       await mkdir(workingDirectory, { recursive: true });
       const entries = await readdir(workingDirectory);
@@ -152,6 +158,7 @@ export function registerCreateAppFromJdl(server: McpServer): void {
         jdl: finalJdl,
         filename: jdlFilename,
         dryRun,
+        blueprints,
         extraArgs,
         onData: makeProgressReporter(extra),
       });
