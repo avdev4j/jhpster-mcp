@@ -18,6 +18,8 @@ export interface StructuredRunResult {
   filesChanged: FileChange[];
   /** Warning lines surfaced by the generator. */
   warnings: string[];
+  /** Absolute path to a pre-generation backup of the project, when one was taken. */
+  backupPath?: string;
   /** Index signature so this satisfies the MCP `structuredContent` shape. */
   [key: string]: unknown;
 }
@@ -31,6 +33,7 @@ export const structuredOutputShape = {
   entities: z.array(z.string()),
   filesChanged: z.array(z.object({ action: z.string(), path: z.string() })),
   warnings: z.array(z.string()),
+  backupPath: z.string().optional(),
 };
 
 // eslint-disable-next-line no-control-regex
@@ -66,6 +69,15 @@ export function parseFileChanges(output: string): FileChange[] {
   return changes;
 }
 
+/** One-line summary of file changes grouped by action, e.g. "12 file changes: 10 create, 2 force". */
+export function summarizeChanges(changes: FileChange[]): string {
+  if (changes.length === 0) return "No file changes reported.";
+  const counts = new Map<string, number>();
+  for (const c of changes) counts.set(c.action, (counts.get(c.action) ?? 0) + 1);
+  const parts = [...counts.entries()].map(([action, n]) => `${n} ${action}`);
+  return `${changes.length} file change${changes.length === 1 ? "" : "s"}: ${parts.join(", ")}.`;
+}
+
 /** Collect distinct warning lines from generator output. */
 export function parseWarnings(output: string): string[] {
   const seen = new Set<string>();
@@ -81,10 +93,10 @@ export function parseWarnings(output: string): string[] {
 /** Build the structured result from a raw run result plus optional context. */
 export function toStructuredResult(
   r: { command: string; exitCode: number; stdout: string; stderr: string },
-  opts: { jdl?: string; dryRun?: boolean } = {},
+  opts: { jdl?: string; dryRun?: boolean; backupPath?: string } = {},
 ): StructuredRunResult {
   const combined = `${r.stdout}\n${r.stderr}`;
-  return {
+  const result: StructuredRunResult = {
     command: r.command,
     exitCode: r.exitCode,
     success: r.exitCode === 0,
@@ -93,4 +105,6 @@ export function toStructuredResult(
     filesChanged: parseFileChanges(combined),
     warnings: parseWarnings(combined),
   };
+  if (opts.backupPath) result.backupPath = opts.backupPath;
+  return result;
 }

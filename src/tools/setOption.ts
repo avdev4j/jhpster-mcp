@@ -32,6 +32,12 @@ const inputShape = {
     .boolean()
     .default(false)
     .describe("Preview only: run `jhipster jdl --dry-run` so the project is not modified."),
+  backup: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Snapshot the project into a temp backup dir before this `--force` apply (excludes node_modules/.git/build output) so it can be rolled back. Ignored on a dry run. The backup path is surfaced in the result.",
+    ),
 };
 
 export function registerSetOption(server: McpServer): void {
@@ -50,7 +56,7 @@ export function registerSetOption(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async ({ workingDirectory, option, value, entities, except, dryRun }, extra) => {
+    async ({ workingDirectory, option, value, entities, except, dryRun, backup }, extra) => {
       const jdl = buildOptionJdl({ option, value, entities, except });
 
       const result = await applyJdl({
@@ -58,13 +64,18 @@ export function registerSetOption(server: McpServer): void {
         jdl,
         filename: `option-${option}.jdl`,
         dryRun,
+        backup,
         onData: makeProgressReporter(extra),
       });
 
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
-        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
+        structuredContent: toStructuredResult(result, {
+          jdl,
+          dryRun: result.dryRun,
+          backupPath: result.backupPath,
+        }),
       };
     },
   );

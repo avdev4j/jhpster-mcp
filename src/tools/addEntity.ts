@@ -38,6 +38,12 @@ const inputShape = {
     .boolean()
     .default(false)
     .describe("Preview only: run `jhipster jdl --dry-run` so the project is not modified."),
+  backup: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Snapshot the project into a temp backup dir before this `--force` apply (excludes node_modules/.git/build output) so it can be rolled back. Ignored on a dry run. The backup path is surfaced in the result.",
+    ),
 };
 
 export function registerAddEntity(server: McpServer): void {
@@ -56,7 +62,7 @@ export function registerAddEntity(server: McpServer): void {
         openWorldHint: false,
       },
     },
-    async ({ workingDirectory, name, fields, options, dryRun }, extra) => {
+    async ({ workingDirectory, name, fields, options, dryRun, backup }, extra) => {
       const def: EntityDef = { name, fields, options };
       const jdl = buildEntityJdl(def);
 
@@ -65,13 +71,18 @@ export function registerAddEntity(server: McpServer): void {
         jdl,
         filename: `entity-${name}.jdl`,
         dryRun,
+        backup,
         onData: makeProgressReporter(extra),
       });
 
       return {
         isError: result.exitCode !== 0,
         content: [{ type: "text", text: formatApplyResult(jdl, result, true) }],
-        structuredContent: toStructuredResult(result, { jdl, dryRun: result.dryRun }),
+        structuredContent: toStructuredResult(result, {
+          jdl,
+          dryRun: result.dryRun,
+          backupPath: result.backupPath,
+        }),
       };
     },
   );

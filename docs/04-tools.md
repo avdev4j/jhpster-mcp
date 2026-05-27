@@ -135,6 +135,17 @@ Pass **`dryRun: true`** to any of the five applying tools to get a true no-write
 
 > ⚠️ This is **not** JHipster's `--dry-run`. In JHipster 9, `--dry-run` only *prints conflicts* — it still writes files. So this server isolates instead of relying on that flag. See [page 7](07-context-management.md#dry-run-is-isolation-not-a-flag).
 
+## Safe-apply: backup & rollback
+
+The four tools that modify an **existing** project — `import_jdl`, `add_entity`, `add_relationship`, `set_option` — accept an opt-in **`backup: true`**. Before the `--force` run, the server copies your project into a temp backup directory (excluding large regenerable folders: `node_modules`, `.git`, `target`, `build`, `dist`, `.gradle`), so a bad generation is one restore away.
+
+- The backup path and a one-line change summary are surfaced in the result text, with a ready-to-paste `cp -R … && rm -rf …` rollback command.
+- The path is also in `structuredContent.backupPath`.
+- It's a **backup directory, not git** — the server never touches your repo, consistent with its no-git principle. (Resolving conflicts and committing remain yours, via your own git.)
+- Ignored on a dry run (nothing is written, so nothing needs backing up). `create_app_from_jdl` has no `backup` flag — it requires an empty directory, so there's nothing to snapshot.
+
+> Use it for risky changes to a project with uncommitted work. If your project is already under git with a clean tree, a commit/stash is just as good — `backup` is there for when it isn't.
+
 ## Structured output
 
 Every tool that runs `jhipster` returns machine-readable `structuredContent` alongside the text, against a shared schema:
@@ -147,7 +158,8 @@ Every tool that runs `jhipster` returns machine-readable `structuredContent` alo
   "dryRun": false,
   "entities": ["Customer", "Order"],          // parsed from the applied JDL
   "filesChanged": [{ "action": "create", "path": "src/main/java/..." }],
-  "warnings": ["WARNING! ..."]
+  "warnings": ["WARNING! ..."],
+  "backupPath": "/tmp/jhipster-mcp-backup-shop-XXXX"  // only when backup: true
 }
 ```
 

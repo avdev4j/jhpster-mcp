@@ -2,6 +2,7 @@ import { writeFile, readFile, mkdtemp, rm, cp, access, constants } from "node:fs
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { runJhipster, formatRunResult, type RunResult } from "./jhipster.js";
+import { parseFileChanges, summarizeChanges } from "./result.js";
 import type { OnData } from "./progress.js";
 
 const BASE_ARGS = ["--force", "--skip-git"];
@@ -14,6 +15,12 @@ const BASE_ARGS = ["--force", "--skip-git"];
  */
 const CONTEXT_ENTRIES = [".yo-rc.json", ".jhipster"];
 
+/**
+ * Top-level directories excluded from a safety backup — large and fully
+ * regenerable, so copying them would be slow and pointless for rollback.
+ */
+const BACKUP_EXCLUDES = new Set(["node_modules", ".git", "target", "build", "dist", ".gradle"]);
+
 export interface ApplyJdlOptions {
   workingDirectory: string;
   jdl: string;
@@ -22,6 +29,8 @@ export interface ApplyJdlOptions {
   extraArgs?: string[];
   /** When true, generate in an isolated temp copy and discard it — the project is never modified. */
   dryRun?: boolean;
+  /** When true (and not a dry run), snapshot the project before the `--force` run so it can be restored. */
+  backup?: boolean;
   onData?: OnData;
 }
 
@@ -29,6 +38,29 @@ export interface ApplyJdlResult extends RunResult {
   /** Where the JDL was (or would be) written in the project. */
   jdlPath: string;
   dryRun: boolean;
+  /** Absolute path to the pre-generation backup, when one was taken. */
+  backupPath?: string;
+}
+
+/**
+ * Snapshot a project directory into a fresh temp dir before a destructive run,
+ * skipping large regenerable folders ([[BACKUP_EXCLUDES]]). Returns the backup's
+ * absolute path so callers can surface a rollback instruction. No git involved —
+ * this is the server's no-git safety net for `--force` overwrites.
+ */
+export async function backupProject(projectDir: string): Promise<string> {
+  const base = path.basename(projectDir) || "project";
+  const dest = await mkdtemp(path.join(tmpdir(), `jhipster-mcp-backup-${base}-`));
+  await cp(projectDir, dest, {
+    recursive: true,
+    filter: (src) => {
+      const rel = path.relative(projectDir, src);
+      if (rel === "") return true; // the project root itself
+      const top = rel.split(path.sep)[0]!;
+      return !BACKUP_EXCLUDES.has(top);
+    },
+  });
+  return dest;
 }
 
 /** Best-effort copy of the project's generator context (`.yo-rc.json`, `.jhipster/`) into `dest`. */
@@ -128,6 +160,10 @@ export async function applyJdl(opts: ApplyJdlOptions): Promise<ApplyJdlResult> {
     };
   }
 
+  // Snapshot the pristine project before writing the JDL or running --force,
+  // so a bad generation is one restore away. Skipped on dry runs (no writes).
+  const backupPath = opts.backup ? await backupProject(opts.workingDirectory) : undefined;
+
   const jdlPath = path.join(opts.workingDirectory, opts.filename);
   await writeFile(jdlPath, opts.jdl, "utf8");
   const result = await runJhipster({
@@ -135,7 +171,7 @@ export async function applyJdl(opts: ApplyJdlOptions): Promise<ApplyJdlResult> {
     args: ["jdl", opts.filename, ...BASE_ARGS, ...extraArgs],
     onData: opts.onData,
   });
-  return { ...result, jdlPath, dryRun: false };
+  return { ...result, jdlPath, dryRun: false, backupPath };
 }
 
 /**
@@ -154,5 +190,14 @@ export function formatApplyResult(
   const body = echoJdl
     ? `${result.dryRun ? "Validated JDL" : "Applied JDL"}:\n${jdl}\n\n${formatRunResult(result)}`
     : formatRunResult(result);
-  return note + body;
+
+  const summary = summarizeChanges(parseFileChanges(`${result.stdout}\n${result.stderr}`));
+  const projectDir = path.dirname(result.jdlPath);
+  const backup = result.backupPath
+    ? `\n\nBackup taken before this run: ${result.backupPath}\n` +
+      `To roll back, restore it over the project and remove the backup:\n` +
+      `  cp -R "${result.backupPath}/." "${projectDir}/" && rm -rf "${result.backupPath}"`
+    : "";
+
+  return `${note}${body}\n\n${summary}${backup}`;
 }

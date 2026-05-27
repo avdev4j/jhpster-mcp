@@ -49,9 +49,18 @@ These make the agent faster and more accurate:
 - **Ask for a dry run when unsure.** "Show me what this would change, don't write yet" → the agent adds `dryRun: true`.
 - **Use prompts for common jobs** (CRUD monolith, audit fields, microservice split) — they encode the good defaults. See [page 6](06-prompts.md).
 
+## Safe-apply with rollback
+
+For risky changes to a project that has uncommitted work, pass **`backup: true`** to `import_jdl`, `add_entity`, `add_relationship`, or `set_option`:
+
+> In `/Users/me/projects/shop`, apply this JDL but take a backup first so I can roll back.
+
+The server snapshots the project (minus `node_modules`/`.git`/build output) into a temp dir before the `--force` run, and returns the backup path plus a ready-to-paste rollback command. It's a **backup directory, not git** — your repo is untouched. If your tree is already clean under git, a commit/stash does the same job; `backup` exists for when it isn't. Details in [Tools → Safe-apply](04-tools.md#safe-apply-backup--rollback).
+
 ## Safety controls (what protects you)
 
 - **Directory scoping** — the server only acts inside the `workingDirectory` you pass; it has no cwd of its own.
+- **Opt-in backup/rollback** — `backup: true` snapshots an existing project before a `--force` apply (see above).
 - **Empty-dir guard** — `create_app_from_jdl` won't overwrite a populated directory (`.git`/`.DS_Store` ignored).
 - **No shell** — every spawn uses `shell: false`; `run_jhipster` validates the subcommand against the allowlist and rejects metacharacter args.
 - **JDL injection guard** — entity/field/type/package names are validated against strict regexes before any JDL is built, so a malicious "name" can't inject JDL.
