@@ -8,6 +8,10 @@ An **MCP (Model Context Protocol) server** that lets AI agents drive the [JHipst
 
 Transport is **stdio**. The entry point is [src/index.ts](src/index.ts).
 
+## Documentation
+
+User-facing documentation lives in [docs/](docs/) (a numbered, progressive guide for JHipster users new to MCP — installation, tools/resources/prompts reference, context management, advanced usage, and an engine page that mirrors this file). **Keep it in sync as features land:** when a roadmap item ships, update the relevant `docs/*.md` page alongside the code, the same way you update the README. The roadmap itself is [docs/ROADMAP.md](docs/ROADMAP.md).
+
 ## Commands
 
 ```bash
@@ -78,4 +82,4 @@ It does not run `mvn`/`npm` builds, start generated apps, run their tests, or to
 
 ## Roadmap
 
-Ongoing improvement work is tracked in [ROADMAP.md](ROADMAP.md) — check it at the start of a session to see what's in progress and what's next. Update the Status column and the decision log as items land.
+Ongoing improvement work is tracked in [docs/ROADMAP.md](docs/ROADMAP.md) — check it at the start of a session to see what's in progress and what's next. Update the Status column and the decision log as items land, and update the matching [docs/](docs/) page(s) for any user-visible change.
