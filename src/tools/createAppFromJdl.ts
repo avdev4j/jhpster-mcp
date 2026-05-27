@@ -44,6 +44,12 @@ export function registerCreateAppFromJdl(server: McpServer): void {
         "Scaffolds a new JHipster application by writing a JDL file to the target directory and running `jhipster jdl <file> --force --skip-git`. The directory should be empty. Pass dryRun=true to preview without writing.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
       await mkdir(workingDirectory, { recursive: true });

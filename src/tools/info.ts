@@ -19,6 +19,11 @@ export function registerInfo(server: McpServer): void {
         "Runs `jhipster info` to print versions, configuration, entities, and environment for the project.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory }, extra) => {
       const result = await runJhipster({

@@ -49,6 +49,12 @@ export function registerAddEntity(server: McpServer): void {
         "Builds a JDL snippet for one entity (and optional per-entity options) and applies it with `jhipster jdl`.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, name, fields, options, dryRun }, extra) => {
       const def: EntityDef = { name, fields, options };

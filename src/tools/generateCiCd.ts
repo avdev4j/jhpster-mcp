@@ -26,6 +26,12 @@ export function registerGenerateCiCd(server: McpServer): void {
         "Runs `jhipster ci-cd` non-interactively to scaffold a pipeline for the chosen provider.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, pipeline, extraArgs }, extra) => {
       const result = await runJhipster({

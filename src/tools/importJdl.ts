@@ -37,6 +37,12 @@ export function registerImportJdl(server: McpServer): void {
         "Writes the provided JDL into the project directory and runs `jhipster jdl <file> --force --skip-git` to apply it (adds entities, relationships, options). Pass dryRun=true to preview without modifying the project.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, jdl, jdlFilename, dryRun, extraArgs }, extra) => {
       const result = await applyJdl({

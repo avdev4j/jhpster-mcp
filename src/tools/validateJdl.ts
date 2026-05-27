@@ -26,6 +26,11 @@ export function registerValidateJdl(server: McpServer): void {
         "Checks JDL for errors without modifying any project. Runs a fast local structural lint (empty input, unbalanced braces), then generates from the JDL in an isolated throwaway directory (copying the project's config/entities for context when given) and discards it, so syntax/semantic errors surface before a real generation.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ jdl, workingDirectory }, extra) => {
       // 1. Fast local lint — no spawn, works even when the CLI is unavailable.

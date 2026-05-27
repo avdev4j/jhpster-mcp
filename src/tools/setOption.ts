@@ -43,6 +43,12 @@ export function registerSetOption(server: McpServer): void {
         "Applies a JDL option line like `paginate * with pagination` to the project.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, option, value, entities, except, dryRun }, extra) => {
       const jdl = buildOptionJdl({ option, value, entities, except });

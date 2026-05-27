@@ -51,6 +51,12 @@ export function registerRunJhipster(server: McpServer): void {
         "Escape hatch for subcommands not covered by dedicated tools. Subcommand must be allowlisted and each arg must avoid shell metacharacters. `--force` is appended automatically to keep execution non-interactive.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
     },
     async ({ workingDirectory, subcommand, args }, extra) => {
       if (!ALLOWED_SUBCOMMANDS.has(subcommand)) {

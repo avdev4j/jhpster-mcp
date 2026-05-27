@@ -39,6 +39,12 @@ export function registerAddRelationship(server: McpServer): void {
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
       inputSchema: inputShape,
       outputSchema: structuredOutputShape,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async ({ workingDirectory, kind, from, to, dryRun }, extra) => {
       const jdl = buildRelationshipJdl({
