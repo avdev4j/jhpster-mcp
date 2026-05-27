@@ -51,7 +51,7 @@ Each tool carries behavioral **hints** so your host can make smart approval deci
 
 | Hint | Meaning | Tools |
 |------|---------|-------|
-| `readOnlyHint` | Doesn't modify anything | `info`, `validate_jdl` |
+| `readOnlyHint` | Doesn't modify anything | `info`, `validate_jdl`, `project_commands` |
 | `destructiveHint` | Can overwrite files (`--force`) | the five applying tools, `generate_ci_cd`, `run_jhipster` |
 | `idempotentHint` | Re-running with the same args converges | the applying tools (except `create_app_from_jdl`) |
 | `openWorldHint` | May reach external systems | `run_jhipster` (it allows deploy subcommands) |

@@ -9,12 +9,13 @@ Tools are the **verbs** — the agent calls them to do work. You don't call tool
 1. Every tool takes an absolute **`workingDirectory`** (the server has no cwd).
 2. Every JHipster invocation runs **non-interactively** (`--force --skip-git`, `CI=true`).
 
-## The ten tools
+## The eleven tools
 
 | Tool | What it does | Read-only? |
 |------|--------------|:---:|
 | [`validate_jdl`](#validate_jdl) | Validate JDL without writing any files. | ✅ |
 | [`info`](#info) | Run `jhipster info` — versions, config, entities. | ✅ |
+| [`project_commands`](#project_commands) | Report build/run/test commands (runs nothing). | ✅ |
 | [`create_app_from_jdl`](#create_app_from_jdl) | Scaffold a **new** app from JDL into an empty dir. | |
 | [`import_jdl`](#import_jdl) | Apply raw JDL to an **existing** project. | |
 | [`add_entity`](#add_entity) | Build + apply JDL for one entity. | |
@@ -44,6 +45,16 @@ Runs `jhipster info` to print versions, configuration, entities, and environment
 | Arg | Required |
 |-----|:---:|
 | `workingDirectory` | ✅ |
+
+### `project_commands`
+
+Inspects a generated project and **reports** the commands to build, run, test, package, and dockerize it — without running any of them. Read-only; pure filesystem reads.
+
+| Arg | Required |
+|-----|:---:|
+| `workingDirectory` | ✅ |
+
+Returns `{ buildTool, clientFramework, commands: [{ category, command, description }], notes }`. Commands are grounded in the actual project: it prefers the `./mvnw`/`./gradlew` wrapper when present and only lists `npm run …` scripts that exist in `package.json`. This is the in-scope counterpart to the things the server won't do — see [Introduction → out of scope](01-introduction.md#what-it-deliberately-does-not-do).
 
 ### `create_app_from_jdl`
 

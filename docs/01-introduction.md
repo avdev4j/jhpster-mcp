@@ -46,7 +46,7 @@ You'll meet each in its own reference page. Page [7](07-context-management.md) e
 - **Scaffold a new app** from JDL (`create_app_from_jdl`).
 - **Evolve an existing project** — add entities, relationships, options, or apply raw JDL (`add_entity`, `add_relationship`, `set_option`, `import_jdl`).
 - **Validate and preview** before writing a single file (`validate_jdl`, plus a `dryRun` flag on every applying tool).
-- **Inspect** a project (`info`) and read its live state (resources).
+- **Inspect** a project (`info`), read its live state (resources), and get its build/run commands without running them (`project_commands`).
 - **Generate CI/CD** config (`generate_ci_cd`) and **docker-compose / kubernetes deployments** (`generate_deployment`).
 - **Escape hatch** for allowlisted subcommands not covered by a dedicated tool (`run_jhipster`).
 - **Guided recipes** as prompts (CRUD monolith, audit fields, monolith→microservices).
@@ -60,7 +60,7 @@ This server's job ends where the generator's does. It will **not**:
 - touch git (commits, pushes),
 - run `jhipster` interactively (it's always `--force --skip-git`, `CI=true`).
 
-Use your host's own shell tooling for builds, runs, and git. This boundary is intentional — it keeps the server predictable and safe to grant access to.
+Use your host's own shell tooling for builds, runs, and git. This boundary is intentional — it keeps the server predictable and safe to grant access to. (It *will* tell you which commands to run — see [`project_commands`](04-tools.md#project_commands) — it just won't run them.)
 
 ---
 
