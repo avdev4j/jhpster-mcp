@@ -12,6 +12,7 @@ import { registerInfo } from "./tools/info.js";
 import { registerGenerateCiCd } from "./tools/generateCiCd.js";
 import { registerRunJhipster } from "./tools/runJhipster.js";
 import { registerJdlGrammar } from "./resources/jdlGrammar.js";
+import { registerProjectState } from "./resources/projectState.js";
 
 async function main(): Promise<void> {
   const server = new McpServer({
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
   registerGenerateCiCd(server);
   registerRunJhipster(server);
   registerJdlGrammar(server);
+  registerProjectState(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

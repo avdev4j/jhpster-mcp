@@ -17,7 +17,7 @@ Status legend: ⬜ not started · 🟡 in progress · ✅ done · ❄️ deferre
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 4 | **Project-state resources** — `jhipster://project/yo-rc`, `.../entities`, `.../jdl` (via `export-jdl`). | ⬜ | Resource templates so the agent reads current state cheaply instead of guessing; reduces destructive edits. |
+| 4 | **Project-state resources** — `jhipster://project/yo-rc`, `.../entities`, `.../jdl` (via `export-jdl`). | ✅ | Done 2026-05-27. Three `ResourceTemplate`s in [src/resources/projectState.ts](src/resources/projectState.ts), each keyed to a project dir via a `{?dir}` query variable. `yo-rc` + `entities` are pure-fs reads; `jdl` runs `export-jdl` in an isolated temp copy (`exportJdlIsolated` in [src/apply.ts](src/apply.ts)) so the project is never written. Tested in [test/resources/projectState.test.ts](test/resources/projectState.test.ts). |
 | 5 | **Tool annotations** — `readOnlyHint` (`info`), `destructiveHint`/`idempotentHint` (`create_app_from_jdl`). | ⬜ | Lets hosts auto-approve safe tools, confirm risky ones. |
 | 6 | **MCP Prompts** — reusable templates: "scaffold CRUD monolith", "add audit fields to all entities", "monolith → microservices". | ⬜ | Surface as slash commands in the host; encode best practices. |
 
@@ -55,3 +55,4 @@ Status legend: ⬜ not started · 🟡 in progress · ✅ done · ❄️ deferre
   - Parser ([src/result.ts](src/result.ts)) ✅ — correctly parsed 165 real `create`/`force` lines (they arrive on **stderr**, which the parser already reads).
   - Dry-run ❌ → **bug found & fixed**: JHipster 9 `--dry-run` only prints conflicts, it still writes. Reworked `dryRun`/`validate_jdl` to **temp-dir isolation** (`runJdlIsolated`), confirmed no-write against the real CLI. All follow-ups now closed.
   - Next: Tier 2 #4 (project-state resources).
+- **2026-05-27** — ✅ Tier 2 #4 project-state resources shipped. Three resource templates (`jhipster://project/{yo-rc,entities,jdl}{?dir}`); the dir is passed as a percent-encoded `{?dir}` query var (the SDK matches the template but does **not** auto-decode — handler calls `decodeURIComponent`). `yo-rc`/`entities` read the filesystem directly; `jdl` shells out to `export-jdl` in an isolated temp copy. A no-`dir` URI yields an SDK "resource not found" (-32602) since it doesn't match the template. Next: Tier 2 #5 (tool annotations).

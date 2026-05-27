@@ -1,4 +1,4 @@
-import { writeFile, mkdtemp, rm, cp, access, constants } from "node:fs/promises";
+import { writeFile, readFile, mkdtemp, rm, cp, access, constants } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { runJhipster, formatRunResult, type RunResult } from "./jhipster.js";
@@ -74,6 +74,33 @@ export async function runJdlIsolated(opts: {
       args: ["jdl", filename, ...BASE_ARGS, "--skip-install", ...(opts.extraArgs ?? [])],
       onData: opts.onData,
     });
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Synthesize the project's current JDL via `jhipster export-jdl`, run in an
+ * isolated temp copy so the project directory is never written to. The project's
+ * `.yo-rc.json` + `.jhipster/` are copied in first (export-jdl reads them), then
+ * the generated `.jdl` is read back and the temp dir discarded.
+ */
+export async function exportJdlIsolated(contextDir: string): Promise<{ jdl: string; result: RunResult }> {
+  const tempDir = await mkdtemp(path.join(tmpdir(), "jhipster-mcp-export-"));
+  try {
+    await copyProjectContext(contextDir, tempDir);
+    const outFile = "export.jdl";
+    const result = await runJhipster({
+      cwd: tempDir,
+      args: ["export-jdl", outFile, "--skip-git"],
+    });
+    let jdl = "";
+    try {
+      jdl = await readFile(path.join(tempDir, outFile), "utf8");
+    } catch {
+      /* export-jdl produced no file (e.g. not a JHipster project) */
+    }
+    return { jdl, result };
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
