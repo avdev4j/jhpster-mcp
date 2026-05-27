@@ -9,13 +9,14 @@ Tools are the **verbs** — the agent calls them to do work. You don't call tool
 1. Every tool takes an absolute **`workingDirectory`** (the server has no cwd).
 2. Every JHipster invocation runs **non-interactively** (`--force --skip-git`, `CI=true`).
 
-## The eleven tools
+## The twelve tools
 
 | Tool | What it does | Read-only? |
 |------|--------------|:---:|
 | [`validate_jdl`](#validate_jdl) | Validate JDL without writing any files. | ✅ |
 | [`info`](#info) | Run `jhipster info` — versions, config, entities. | ✅ |
 | [`project_commands`](#project_commands) | Report build/run/test commands (runs nothing). | ✅ |
+| [`upgrade_advisor`](#upgrade_advisor) | Pre-flight advice for a version upgrade (runs nothing). | ✅ |
 | [`create_app_from_jdl`](#create_app_from_jdl) | Scaffold a **new** app from JDL into an empty dir. | |
 | [`import_jdl`](#import_jdl) | Apply raw JDL to an **existing** project. | |
 | [`add_entity`](#add_entity) | Build + apply JDL for one entity. | |
@@ -55,6 +56,17 @@ Inspects a generated project and **reports** the commands to build, run, test, p
 | `workingDirectory` | ✅ |
 
 Returns `{ buildTool, clientFramework, commands: [{ category, command, description }], notes }`. Commands are grounded in the actual project: it prefers the `./mvnw`/`./gradlew` wrapper when present and only lists `npm run …` scripts that exist in `package.json`. This is the in-scope counterpart to the things the server won't do — see [Introduction → out of scope](01-introduction.md#what-it-deliberately-does-not-do).
+
+### `upgrade_advisor`
+
+Read-only pre-flight for moving a project to a newer JHipster version. Reads `.yo-rc.json` (current version, app type, blueprints) and the entity count, compares against a target you name, and reports the bump type, a risk rating, project-specific considerations, a recommended upgrade checklist, and official references. It **runs nothing** and does **not** enumerate version-specific breaking changes — that's for the agent/release notes to fill in.
+
+| Arg | Required | Notes |
+|-----|:---:|-------|
+| `workingDirectory` | ✅ | An existing JHipster project. |
+| `targetVersion` | | The version you want to upgrade to (e.g. `8.7.4`). Omit to just report current state + generic guidance. |
+
+Returns `{ currentVersion, targetVersion, bump, riskLevel, applicationType, blueprints, entityCount, considerations, steps, references }`. Risk rises with a major bump, blueprints, a microservices topology, and a large entity count. This is the first of the Tier 5 upgrade features on the [roadmap](ROADMAP.md).
 
 ### `create_app_from_jdl`
 

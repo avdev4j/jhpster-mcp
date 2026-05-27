@@ -46,7 +46,7 @@ You'll meet each in its own reference page. Page [7](07-context-management.md) e
 - **Scaffold a new app** from JDL (`create_app_from_jdl`).
 - **Evolve an existing project** — add entities, relationships, options, or apply raw JDL (`add_entity`, `add_relationship`, `set_option`, `import_jdl`).
 - **Validate and preview** before writing a single file (`validate_jdl`, plus a `dryRun` flag on every applying tool).
-- **Inspect** a project (`info`), read its live state (resources), and get its build/run commands without running them (`project_commands`).
+- **Inspect** a project (`info`), read its live state (resources), get its build/run commands (`project_commands`), and pre-flight a version upgrade (`upgrade_advisor`) — all without running anything.
 - **Generate CI/CD** config (`generate_ci_cd`) and **docker-compose / kubernetes deployments** (`generate_deployment`).
 - **Escape hatch** for allowlisted subcommands not covered by a dedicated tool (`run_jhipster`).
 - **Guided recipes** as prompts (CRUD monolith, audit fields, monolith→microservices).
