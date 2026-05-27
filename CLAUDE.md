@@ -25,7 +25,7 @@ Always run `npm run typecheck` and `npm test` before considering a change done.
 
 ```
 src/
-  index.ts            # registers all tools + resources, connects stdio transport
+  index.ts            # registers all tools + resources + prompts, connects stdio transport
   jhipster.ts         # spawn wrapper around the `jhipster` CLI + result formatting
   apply.ts            # applyJdl() — shared persist-vs-dry-run + result formatting
   progress.ts         # makeProgressReporter() — streams output as progress notes
@@ -33,6 +33,7 @@ src/
   jdl/builders.ts     # pure JDL string builders + quickLintJdl, strict name validation
   tools/*.ts          # one MCP tool per file, each exports register<Name>(server)
   resources/*.ts      # one MCP resource per file, each exports register<Name>(server)
+  prompts/*.ts        # one MCP prompt per file, each exports register<Name>(server)
 ```
 
 Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/apply.ts](src/apply.ts)), which either persists the `.jdl` into `workingDirectory` and runs `jhipster jdl <file> --force --skip-git`, or (when `dryRun`) calls `runJdlIsolated()` — generate in a throwaway temp dir and discard. All five applying tools (`create_app_from_jdl`, `import_jdl`, `add_entity`, `add_relationship`, `set_option`) share this and expose a `dryRun` flag. `validate_jdl` always isolates: local `quickLintJdl` first, then `runJdlIsolated`.

@@ -13,6 +13,9 @@ import { registerGenerateCiCd } from "./tools/generateCiCd.js";
 import { registerRunJhipster } from "./tools/runJhipster.js";
 import { registerJdlGrammar } from "./resources/jdlGrammar.js";
 import { registerProjectState } from "./resources/projectState.js";
+import { registerScaffoldCrudMonolith } from "./prompts/scaffoldCrudMonolith.js";
+import { registerAddAuditFields } from "./prompts/addAuditFields.js";
+import { registerMonolithToMicroservices } from "./prompts/monolithToMicroservices.js";
 
 async function main(): Promise<void> {
   const server = new McpServer({
@@ -31,6 +34,9 @@ async function main(): Promise<void> {
   registerRunJhipster(server);
   registerJdlGrammar(server);
   registerProjectState(server);
+  registerScaffoldCrudMonolith(server);
+  registerAddAuditFields(server);
+  registerMonolithToMicroservices(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
