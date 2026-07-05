@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -43,8 +43,8 @@ export function registerAddRelationship(server: McpServer): void {
       title: "Add a relationship between two entities",
       description:
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

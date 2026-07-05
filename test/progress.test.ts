@@ -13,9 +13,11 @@ function fakeExtra(token?: string | number): {
 } {
   const notes: CapturedNote[] = [];
   const extra: ProgressCapableExtra = {
-    _meta: token === undefined ? undefined : { progressToken: token },
-    sendNotification: async (n) => {
-      notes.push(n as unknown as CapturedNote);
+    mcpReq: {
+      _meta: token === undefined ? undefined : { progressToken: token },
+      notify: async (n) => {
+        notes.push(n as unknown as CapturedNote);
+      },
     },
   };
   return { extra, notes };
@@ -78,10 +80,12 @@ describe("makeProgressReporter", () => {
   it("never throws when sendNotification rejects", () => {
     const notes: CapturedNote[] = [];
     const extra: ProgressCapableExtra = {
-      _meta: { progressToken: "tok" },
-      sendNotification: async () => {
-        void notes;
-        throw new Error("transport closed");
+      mcpReq: {
+        _meta: { progressToken: "tok" },
+        notify: async () => {
+          void notes;
+          throw new Error("transport closed");
+        },
       },
     };
     const onData = makeProgressReporter(extra)!;

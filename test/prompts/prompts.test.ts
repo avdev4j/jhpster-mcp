@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { createMcpPair } from "../helpers/mcp.js";
 import { registerScaffoldCrudMonolith } from "../../src/prompts/scaffoldCrudMonolith.js";
 import { registerAddAuditFields } from "../../src/prompts/addAuditFields.js";

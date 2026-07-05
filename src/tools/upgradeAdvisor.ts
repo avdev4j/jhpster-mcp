@@ -1,7 +1,7 @@
 import { readFile, readdir, access, constants } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { assertWithinRoot } from "../config.js";
 import { parseVersion, classifyBump, assessUpgrade } from "../upgrade.js";
 
@@ -50,8 +50,8 @@ export function registerUpgradeAdvisor(server: McpServer): void {
       title: "Advise on a JHipster version upgrade",
       description:
         "Read-only pre-flight for upgrading a project's JHipster version. Reports the current version (from .yo-rc.json), the bump type vs. a target you name, project-specific risk factors (blueprints, microservices, entity count), a recommended upgrade checklist, and official references. It does NOT run the upgrade or enumerate version-specific breaking changes — consult the linked release notes for those.",
-      inputSchema: inputShape,
-      outputSchema: outputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(outputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

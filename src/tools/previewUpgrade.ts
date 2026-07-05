@@ -1,7 +1,7 @@
 import { rm, access, constants } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { assertWithinRoot } from "../config.js";
 import { makeProgressReporter } from "../progress.js";
 import { regenerateProjectIsolated } from "../apply.js";
@@ -45,8 +45,8 @@ export function registerPreviewUpgrade(server: McpServer): void {
       title: "Preview a version upgrade as a file diff",
       description:
         "Git-free upgrade preview: regenerates the project's own model in an isolated temp copy (optionally with a target generator version via npx) and diffs the result against your current files — reporting which files would be added, removed, or modified. Never writes to your project. `modified` reflects both generator changes and your own customizations; review each.",
-      inputSchema: inputShape,
-      outputSchema: outputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(outputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

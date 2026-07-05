@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -47,8 +47,8 @@ export function registerSetOption(server: McpServer): void {
       title: "Set a JDL option on entities",
       description:
         "Applies a JDL option line like `paginate * with pagination` to the project.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

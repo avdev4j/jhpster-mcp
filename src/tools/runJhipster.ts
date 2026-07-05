@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -50,8 +50,8 @@ export function registerRunJhipster(server: McpServer): void {
       title: "Run an arbitrary jhipster subcommand (allowlisted)",
       description:
         "Escape hatch for subcommands not covered by dedicated tools. Subcommand must be allowlisted and each arg must avoid shell metacharacters. `--force` is appended automatically to keep execution non-interactive.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

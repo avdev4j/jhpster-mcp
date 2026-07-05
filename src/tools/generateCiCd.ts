@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { runJhipster, formatRunResult } from "../jhipster.js";
 import { makeProgressReporter } from "../progress.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -25,8 +25,8 @@ export function registerGenerateCiCd(server: McpServer): void {
       title: "Generate CI/CD pipeline configuration",
       description:
         "Runs `jhipster ci-cd` non-interactively to scaffold a pipeline for the chosen provider.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

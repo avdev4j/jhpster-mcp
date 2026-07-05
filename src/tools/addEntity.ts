@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -53,8 +53,8 @@ export function registerAddEntity(server: McpServer): void {
       title: "Add a single entity to a JHipster project",
       description:
         "Builds a JDL snippet for one entity (and optional per-entity options) and applies it with `jhipster jdl`.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

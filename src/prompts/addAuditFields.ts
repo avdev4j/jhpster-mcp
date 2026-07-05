@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 
 const argsSchema = {
   workingDirectory: z.string().describe("Absolute path of the existing JHipster project."),
@@ -18,7 +18,7 @@ export function registerAddAuditFields(server: McpServer): void {
       title: "Add audit fields to entities",
       description:
         "Add the four standard Spring Data auditing fields (createdBy, createdDate, lastModifiedBy, lastModifiedDate) to existing entities.",
-      argsSchema,
+      argsSchema: z.object(argsSchema),
     },
     ({ workingDirectory, entities }) => {
       const scope = entities?.trim()

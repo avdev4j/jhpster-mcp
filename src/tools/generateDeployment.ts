@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { makeProgressReporter } from "../progress.js";
 import { applyJdl, formatApplyResult } from "../apply.js";
 import { structuredOutputShape, toStructuredResult } from "../result.js";
@@ -58,8 +58,8 @@ export function registerGenerateDeployment(server: McpServer): void {
       title: "Generate a docker-compose or kubernetes deployment",
       description:
         "Builds a declarative JDL `deployment { ... }` block for the chosen apps and applies it with `jhipster jdl` — the non-interactive way to scaffold docker-compose or kubernetes config. The named appsFolders must already be generated JHipster apps that JHipster can find relative to workingDirectory.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

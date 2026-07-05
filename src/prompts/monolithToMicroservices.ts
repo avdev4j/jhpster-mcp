@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 
 const argsSchema = {
   workingDirectory: z
@@ -23,7 +23,7 @@ export function registerMonolithToMicroservices(server: McpServer): void {
       title: "Plan a monolith → microservices split",
       description:
         "Turn an existing monolith's model into a gateway + microservice JDL, assigning entities to services.",
-      argsSchema,
+      argsSchema: z.object(argsSchema),
     },
     ({ workingDirectory, targetDirectory, services, gatewayName }) => {
       const dirParam = encodeURIComponent(workingDirectory);
