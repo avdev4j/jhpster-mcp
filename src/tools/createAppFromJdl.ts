@@ -110,8 +110,8 @@ export function registerCreateAppFromJdl(server: McpServer): void {
       title: "Create JHipster application from JDL",
       description:
         "Scaffolds a new JHipster application by writing a JDL file to the target directory and running `jhipster jdl <file> --force --skip-git`. The directory should be empty. Pass dryRun=true to preview without writing.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

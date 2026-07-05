@@ -43,8 +43,8 @@ export function registerAddRelationship(server: McpServer): void {
       title: "Add a relationship between two entities",
       description:
         "Builds a `relationship <kind> { A{a} to B{b} }` JDL block and applies it.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

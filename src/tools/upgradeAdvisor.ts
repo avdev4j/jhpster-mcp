@@ -50,8 +50,8 @@ export function registerUpgradeAdvisor(server: McpServer): void {
       title: "Advise on a JHipster version upgrade",
       description:
         "Read-only pre-flight for upgrading a project's JHipster version. Reports the current version (from .yo-rc.json), the bump type vs. a target you name, project-specific risk factors (blueprints, microservices, entity count), a recommended upgrade checklist, and official references. It does NOT run the upgrade or enumerate version-specific breaking changes — consult the linked release notes for those.",
-      inputSchema: inputShape,
-      outputSchema: outputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(outputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

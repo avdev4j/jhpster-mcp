@@ -25,8 +25,8 @@ export function registerGenerateCiCd(server: McpServer): void {
       title: "Generate CI/CD pipeline configuration",
       description:
         "Runs `jhipster ci-cd` non-interactively to scaffold a pipeline for the chosen provider.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,

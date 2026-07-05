@@ -18,7 +18,7 @@ export function registerAddAuditFields(server: McpServer): void {
       title: "Add audit fields to entities",
       description:
         "Add the four standard Spring Data auditing fields (createdBy, createdDate, lastModifiedBy, lastModifiedDate) to existing entities.",
-      argsSchema,
+      argsSchema: z.object(argsSchema),
     },
     ({ workingDirectory, entities }) => {
       const scope = entities?.trim()

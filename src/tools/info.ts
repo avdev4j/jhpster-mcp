@@ -18,8 +18,8 @@ export function registerInfo(server: McpServer): void {
       title: "Show JHipster project info",
       description:
         "Runs `jhipster info` to print versions, configuration, entities, and environment for the project.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

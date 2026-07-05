@@ -27,7 +27,7 @@ export function registerScaffoldCrudMonolith(server: McpServer): void {
       title: "Scaffold a CRUD monolith",
       description:
         "Generate a complete monolithic JHipster app with full CRUD for the given entities (pagination, service layer, and DTOs wired up).",
-      argsSchema,
+      argsSchema: z.object(argsSchema),
     },
     ({ workingDirectory, baseName, entities, database, auth, client, packageName }) => {
       const db = database || "postgresql";

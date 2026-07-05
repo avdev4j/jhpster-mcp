@@ -25,8 +25,8 @@ export function registerValidateJdl(server: McpServer): void {
       title: "Validate JDL without generating",
       description:
         "Checks JDL for errors without modifying any project. Runs a fast local structural lint (empty input, unbalanced braces), then generates from the JDL in an isolated throwaway directory (copying the project's config/entities for context when given) and discards it, so syntax/semantic errors surface before a real generation.",
-      inputSchema: inputShape,
-      outputSchema: structuredOutputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(structuredOutputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

@@ -103,8 +103,8 @@ export function registerProjectCommands(server: McpServer): void {
       title: "Report build/run/test commands for a project",
       description:
         "Inspects a generated JHipster project (.yo-rc.json, build files, package.json scripts) and reports the commands to build, run, test, package, and dockerize it — without running anything. Read-only.",
-      inputSchema: inputShape,
-      outputSchema: outputShape,
+      inputSchema: z.object(inputShape),
+      outputSchema: z.object(outputShape),
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,
