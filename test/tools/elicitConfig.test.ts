@@ -2,10 +2,9 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { ElicitRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { Client } from "@modelcontextprotocol/client";
+import { McpServer } from "@modelcontextprotocol/server";
+import { InMemoryTransport } from "@modelcontextprotocol/client";
 import { registerCreateAppFromJdl } from "../../src/tools/createAppFromJdl.js";
 import { installFakeJhipster } from "../helpers/fakeJhipster.js";
 import { makeTempDir } from "../helpers/tmpdir.js";
@@ -34,7 +33,7 @@ async function makeElicitPair(respond: ElicitResponse | (() => ElicitResponse)):
   const client = new Client({ name: "tc", version: "0" }, { capabilities: { elicitation: {} } });
   let calls = 0;
   let lastProperties: Record<string, unknown> | undefined;
-  client.setRequestHandler(ElicitRequestSchema, async (req) => {
+  client.setRequestHandler("elicitation/create", async (req) => {
     calls += 1;
     if ("requestedSchema" in req.params) {
       lastProperties = (req.params.requestedSchema as { properties?: Record<string, unknown> }).properties;

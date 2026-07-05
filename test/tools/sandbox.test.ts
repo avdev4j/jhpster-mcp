@@ -8,7 +8,7 @@ import { createMcpPair, getText } from "../helpers/mcp.js";
 import { installFakeJhipster } from "../helpers/fakeJhipster.js";
 import { makeTempDir } from "../helpers/tmpdir.js";
 
-function registerAll(server: import("@modelcontextprotocol/sdk/server/mcp.js").McpServer): void {
+function registerAll(server: import("@modelcontextprotocol/server").McpServer): void {
   registerImportJdl(server);
   registerInfo(server);
 }

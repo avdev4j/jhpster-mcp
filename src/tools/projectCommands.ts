@@ -1,7 +1,7 @@
 import { readFile, access, constants } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { assertWithinRoot } from "../config.js";
 
 const inputShape = {

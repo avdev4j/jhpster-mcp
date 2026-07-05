@@ -27,7 +27,6 @@ describe("progress streaming (end-to-end via MCP)", () => {
             jdl: "application { config { baseName demo } }",
           },
         },
-        undefined,
         { onprogress: (p: Progress) => progressNotes.push(p) },
       );
 

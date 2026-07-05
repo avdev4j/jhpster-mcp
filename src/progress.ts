@@ -1,13 +1,16 @@
-import type { ServerNotification } from "@modelcontextprotocol/sdk/types.js";
+import type { ServerNotification } from "@modelcontextprotocol/server";
 
 /**
- * The slice of an MCP tool handler's `extra` argument that we need to stream
- * progress. Kept structural so it accepts the SDK's RequestHandlerExtra without
- * pulling in its full generic signature.
+ * The slice of an MCP tool handler's `ctx` (ServerContext) argument that we need
+ * to stream progress. Kept structural so it accepts the SDK's ServerContext
+ * without pulling in its full type. In the v2 SDK the progress token and the
+ * per-request notifier both live under `ctx.mcpReq`.
  */
 export interface ProgressCapableExtra {
-  _meta?: { progressToken?: string | number };
-  sendNotification: (notification: ServerNotification) => Promise<void>;
+  mcpReq: {
+    _meta?: { progressToken?: string | number };
+    notify: (notification: ServerNotification) => Promise<void>;
+  };
 }
 
 export type OnData = (chunk: string, stream: "stdout" | "stderr") => void;
@@ -20,7 +23,7 @@ export type OnData = (chunk: string, stream: "stdout" | "stderr") => void;
  * case the caller should simply not stream (output is still returned at the end).
  */
 export function makeProgressReporter(extra: ProgressCapableExtra | undefined): OnData | undefined {
-  const token = extra?._meta?.progressToken;
+  const token = extra?.mcpReq._meta?.progressToken;
   if (token === undefined || extra === undefined) return undefined;
 
   let progress = 0;
@@ -28,8 +31,8 @@ export function makeProgressReporter(extra: ProgressCapableExtra | undefined): O
 
   const emit = (line: string) => {
     progress += 1;
-    void extra
-      .sendNotification({
+    void extra.mcpReq
+      .notify({
         method: "notifications/progress",
         params: {
           progressToken: token,

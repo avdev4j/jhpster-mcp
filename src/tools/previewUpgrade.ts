@@ -1,7 +1,7 @@
 import { rm, access, constants } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { assertWithinRoot } from "../config.js";
 import { makeProgressReporter } from "../progress.js";
 import { regenerateProjectIsolated } from "../apply.js";

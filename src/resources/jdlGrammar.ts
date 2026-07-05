@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 
 const JDL_GRAMMAR = `# JHipster Domain Language (JDL) — cheat sheet
 
