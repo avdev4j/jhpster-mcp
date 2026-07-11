@@ -128,7 +128,7 @@ The server snapshots the project (minus `node_modules`/`.git`/build output) into
 - **Directory scoping** — the server only acts inside the `workingDirectory` you pass; it has no cwd of its own. Tighten this to a fixed sandbox with `JHIPSTER_MCP_ROOT` (see [Server configuration](#server-configuration-environment-variables)).
 - **Opt-in backup/rollback** — `backup: true` snapshots an existing project before a `--force` apply (see above).
 - **Empty-dir guard** — `create_app_from_jdl` won't overwrite a populated directory (`.git`/`.DS_Store` ignored).
-- **No shell** — every spawn uses `shell: false`; `run_jhipster` validates the subcommand against the allowlist and rejects metacharacter args.
+- **No shell** — every spawn uses `shell: false` (via `cross-spawn`, which also makes npm's `jhipster.cmd` shim work on Windows); `run_jhipster` validates the subcommand against the allowlist and rejects metacharacter args.
 - **JDL injection guard** — entity/field/type/package names are validated against strict regexes before any JDL is built, so a malicious "name" can't inject JDL.
 - **Preview-first** — `dryRun` and `validate_jdl` let you see every change before it touches disk (and they run in isolation — [page 7](07-context-management.md)).
 
