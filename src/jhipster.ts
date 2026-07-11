@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import spawn from "cross-spawn";
 import { access, constants } from "node:fs/promises";
 import path from "node:path";
 import { getConfig, jhipsterCommand, jhipsterCommandForVersion } from "./config.js";
@@ -53,6 +53,8 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
   const allArgs = [...prefixArgs, ...opts.args, ...cfg.defaultArgs];
 
   return new Promise<RunResult>((resolve, reject) => {
+    // cross-spawn keeps shell:false semantics but resolves .cmd/.bat shims on
+    // Windows (npm installs `jhipster` as jhipster.cmd — plain spawn ENOENTs).
     const child = spawn(command, allArgs, {
       cwd: opts.cwd,
       env: { ...process.env, ...opts.env, CI: "true" },
@@ -70,7 +72,7 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
       setTimeout(() => child.kill("SIGKILL"), 5_000).unref();
     }, timeoutMs);
 
-    child.stdout.on("data", (chunk: Buffer) => {
+    child.stdout?.on("data", (chunk: Buffer) => {
       const text = chunk.toString("utf8");
       opts.onData?.(text, "stdout");
       bufferedBytes += chunk.length;
@@ -84,7 +86,7 @@ export async function runJhipster(opts: RunOptions): Promise<RunResult> {
       stdout += text;
     });
 
-    child.stderr.on("data", (chunk: Buffer) => {
+    child.stderr?.on("data", (chunk: Buffer) => {
       const text = chunk.toString("utf8");
       opts.onData?.(text, "stderr");
       bufferedBytes += chunk.length;

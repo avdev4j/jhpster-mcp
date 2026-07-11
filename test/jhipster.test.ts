@@ -86,8 +86,9 @@ describe("runJhipster", () => {
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, /\[fake-jhipster\]/);
       assert.match(result.stdout, /"args":\["info","--quiet"\]/);
+      // JSON.stringify so Windows backslashes match their escaped form in the fake's JSON output
       assert.ok(
-        result.stdout.includes(`"cwd":"${canonicalCwd}"`),
+        result.stdout.includes(`"cwd":${JSON.stringify(canonicalCwd)}`),
         `expected stdout to include canonical cwd ${canonicalCwd}, got: ${result.stdout}`,
       );
       assert.equal(result.command, "jhipster info --quiet");

@@ -50,7 +50,7 @@ Data flow: a JDL-applying tool builds its JDL, then calls `applyJdl()` ([src/app
 - **Tool schemas use zod raw shapes** (a plain object of zod validators), passed as `inputSchema` to `server.registerTool(name, { title, description, inputSchema }, handler)`.
 - **Every tool takes an absolute `workingDirectory`.** The server has no notion of a cwd. Validate it via `assertDirectoryExists` (already done inside `runJhipster`).
 - **Non-interactive always.** Append `--force --skip-git` to every generator invocation; the spawn wrapper sets `CI=true`. Never run `jhipster` interactively.
-- **Spawn with `shell: false`** — no shell. Validate any user-influenced args (see `run_jhipster`'s allowlist + `ARG_PATTERN`).
+- **Spawn with `shell: false`** — no shell. Spawning goes through `cross-spawn` so Windows `.cmd` shims (npm's `jhipster.cmd`) resolve without one. Validate any user-influenced args (see `run_jhipster`'s allowlist + `ARG_PATTERN`).
 - **JDL injection guard:** entity/field/type/package names are validated against strict regex in [src/jdl/builders.ts](src/jdl/builders.ts). Reuse those builders rather than hand-concatenating JDL.
 - Handlers return `{ isError, content: [{ type: "text", text }] }`. A thrown error is also surfaced by the SDK as an `isError` result.
 - **Structured output:** every jhipster-running tool declares `outputSchema: structuredOutputShape` and returns `structuredContent: toStructuredResult(result, { jdl?, dryRun? })`. The SDK validates `structuredContent` against the schema **only on non-error results** — pre-spawn guard failures (allowlist, empty-dir, lint) stay `isError` with no `structuredContent` and are fine. `StructuredRunResult` has an index signature so it satisfies the SDK's `{ [x: string]: unknown }` requirement.

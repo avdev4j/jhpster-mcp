@@ -28,7 +28,7 @@ src/
 
 All CLI execution funnels through one `runJhipster()` function. It:
 
-- spawns `jhipster` with **`shell: false`** (no shell, so no metacharacter injection) and `CI=true` (forces non-interactive),
+- spawns `jhipster` with **`shell: false`** via `cross-spawn` (no shell, so no metacharacter injection — while still resolving npm's `jhipster.cmd` shim on Windows) and `CI=true` (forces non-interactive),
 - streams stdout/stderr through an `onData` hook (that's what feeds progress notifications) while buffering for the final result,
 - enforces a **timeout** (10 min default) and a **max output buffer** (8 MB), killing the child if either is exceeded,
 - turns a missing binary (`ENOENT`) into a clear "install generator-jhipster globally" message.

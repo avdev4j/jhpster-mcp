@@ -53,6 +53,12 @@ process.exit(parseInt(process.env.FAKE_JHIPSTER_EXIT || "0", 10));
   await writeFile(binPath, script, "utf8");
   await chmod(binPath, 0o755);
 
+  // On Windows the extensionless script is not executable; provide the .cmd
+  // shim that npm would create, so spawn resolution finds it via PATHEXT.
+  if (process.platform === "win32") {
+    await writeFile(path.join(binDir, "jhipster.cmd"), `@node "%~dp0jhipster" %*\r\n`, "utf8");
+  }
+
   const originalPath = process.env.PATH ?? "";
   process.env.PATH = `${binDir}${path.delimiter}${originalPath}`;
 
